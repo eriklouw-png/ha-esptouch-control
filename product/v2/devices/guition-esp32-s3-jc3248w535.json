@@ -7,7 +7,7 @@
   "config": {
     "slots": 6,
     "capabilities": {
-      "imageSlots": 1
+      "imageSlots": 2
     },
     "public": {
       "name": "Guition JC3248W535",

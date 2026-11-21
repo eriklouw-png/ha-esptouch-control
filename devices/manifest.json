@@ -2001,7 +2001,7 @@
     "guition-esp32-s3-jc3248w535": {
       "slots": 6,
       "capabilities": {
-        "imageSlots": 1
+        "imageSlots": 2
       },
       "public": {
         "name": "Guition JC3248W535",
