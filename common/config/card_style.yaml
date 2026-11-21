@@ -1,0 +1,61 @@
+# =============================================================================
+# CONFIG: CARD STYLE - adjustable card spacing and label size
+# =============================================================================
+# Runtime settings, shown in the panel's web page under Screen > Card Style.
+# Included only by devices that opt in with firmware.package.cardStyleControls.
+# The grid code reads these values every time it builds the cards, so changing
+# either one simply redraws the grid.
+#
+#   Card Spacing  gap between cards in pixels (default: the panel's own gap)
+#   Label Size    Small / Medium / Large card label text
+#
+# The device fonts file must define font_text_small, font_text_body and
+# font_text_body_large.
+# =============================================================================
+
+number:
+  - platform: template
+    name: "${entity_screen_card_spacing}"
+    id: card_gap_number
+    entity_category: config
+    icon: "mdi:arrow-expand-horizontal"
+    optimistic: true
+    restore_value: true
+    initial_value: ${main_page_card_gap}
+    min_value: 0
+    max_value: 24
+    step: 1
+    mode: box
+    unit_of_measurement: "px"
+    web_server:
+      sorting_group_id: sg_display
+    on_value:
+      then:
+        - if:
+            condition:
+              lambda: 'return grid_phase2_complete();'
+            then:
+              - script.execute: refresh_subpage_grid
+
+select:
+  - platform: template
+    name: "${entity_screen_label_size}"
+    id: label_size_select
+    entity_category: config
+    icon: "mdi:format-size"
+    optimistic: true
+    restore_value: true
+    initial_option: "Medium"
+    options:
+      - "Small"
+      - "Medium"
+      - "Large"
+    web_server:
+      sorting_group_id: sg_display
+    on_value:
+      then:
+        - if:
+            condition:
+              lambda: 'return grid_phase2_complete();'
+            then:
+              - script.execute: refresh_subpage_grid

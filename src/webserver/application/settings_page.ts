@@ -13,8 +13,8 @@ import {
     normalizeThemeAutoMethod,
 } from "../model/settings";
 import { syncThemeSettingsUi } from "./theme_settings_ui";
-import { syncCardCurveUi } from "./card_curve_ui";
-import { normalizeCardCurve } from "../model/settings";
+import { syncCardCurveUi, syncCardStyleExtrasUi } from "./card_curve_ui";
+import { normalizeCardCurve, normalizeCardGap, normalizeLabelSize } from "../model/settings";
 import type { ConfigCodecFeature } from "./config_codec";
 import type { UiRuntimeState } from "./state";
 import type { CoreFeature } from "./core";
@@ -100,7 +100,7 @@ export function createSettingsPageFeature(codec: Pick<ConfigCodecFeature, "bindT
         onColor.id = "sp-set-on-color";
         activeColourBody.appendChild(onColor);
         els.setOnColor = onColor;
-        const cardCurve = segmentControl(["Small", "Medium", "Large"], normalizeCardCurve(state.cardCurve), (value: string) => {
+        const cardCurve = segmentControl(["Square", "Small", "Medium", "Large"], normalizeCardCurve(state.cardCurve), (value: string) => {
             state.cardCurve = normalizeCardCurve(value);
             syncCardCurveUi(state, runtime);
             syncPreviewOrientation(true);
@@ -114,6 +114,43 @@ export function createSettingsPageFeature(codec: Pick<ConfigCodecFeature, "bindT
         cardStyleBody.appendChild(cardCurve.segment);
         els.setCardCurveButtons = cardCurve.buttons;
         syncCardCurveUi(state, runtime);
+        // Card spacing and label size only appear on panels that expose them.
+        const cardStyleExtras: any = document.createElement("div");
+        cardStyleExtras.id = "sp-set-card-style-extras";
+        cardStyleExtras.hidden = true;
+        const labelSize = segmentControl(["Small", "Medium", "Large"], normalizeLabelSize(state.labelSize), (value: string) => {
+            state.labelSize = normalizeLabelSize(value);
+            syncCardStyleExtrasUi(state, runtime);
+            postSelect(entityName("screen_label_size"), state.labelSize);
+        });
+        labelSize.segment.id = "sp-set-label-size";
+        labelSize.segment.setAttribute("role", "group");
+        labelSize.segment.setAttribute("aria-label", "Label size");
+        cardStyleExtras.appendChild(fieldLabel("Label size"));
+        cardStyleExtras.appendChild(labelSize.segment);
+        els.setLabelSizeButtons = labelSize.buttons;
+        const cardGapField: any = document.createElement("div");
+        cardGapField.className = "sp-field";
+        cardGapField.appendChild(fieldLabel("Card spacing (px)", "sp-set-card-gap"));
+        const cardGapInput: any = document.createElement("input");
+        cardGapInput.type = "number";
+        cardGapInput.className = "sp-input";
+        cardGapInput.id = "sp-set-card-gap";
+        cardGapInput.min = "0";
+        cardGapInput.max = "24";
+        cardGapInput.step = "1";
+        cardGapInput.value = String(state.cardGap);
+        cardGapInput.addEventListener("change", function (this: any) {
+            state.cardGap = normalizeCardGap(this.value);
+            this.value = String(state.cardGap);
+            requestApi.postNumber(entityName("screen_card_spacing"), state.cardGap);
+        });
+        cardGapField.appendChild(cardGapInput);
+        cardStyleExtras.appendChild(cardGapField);
+        els.setCardGap = cardGapInput;
+        els.setCardStyleExtras = cardStyleExtras;
+        cardStyleBody.appendChild(cardStyleExtras);
+        syncCardStyleExtrasUi(state, runtime);
         var themeModes: any = segmentControl([
             ["Dark", "Dark"], ["Light", "Light"], ["Auto", "Automatic"],
         ], normalizeThemeMode(state.themeMode), function (this: any, mode?: any) {

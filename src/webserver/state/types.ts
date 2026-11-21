@@ -200,6 +200,10 @@ export interface AppState {
   themeMode: string;
   cardCurve: string;
   cardCurveSupported: boolean;
+  cardGap: number;
+  cardGapSupported: boolean;
+  labelSize: string;
+  labelSizeSupported: boolean;
   themeAutoMethod: string;
   themeActive: string;
   themeLightStart: string;

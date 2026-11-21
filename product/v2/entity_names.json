@@ -81,6 +81,8 @@
     { "key": "screen_brightness_mode", "domain": "select", "name": "Screen: Brightness Mode", "objectIds": ["screen__brightness_mode", "screen_brightness_mode", "brightness_mode"], "groups": ["settings"] },
     { "key": "screen_theme_mode", "domain": "select", "name": "Screen: Theme Mode", "groups": ["settings"] },
     { "key": "screen_card_curve", "domain": "select", "name": "Screen: Card Curve", "objectIds": ["screen__card_curve", "screen_card_curve", "card_curve_select"], "groups": ["settings"] },
+    { "key": "screen_card_spacing", "domain": "number", "name": "Screen: Card Spacing", "objectIds": ["screen__card_spacing", "screen_card_spacing", "card_gap_number"], "groups": ["settings"] },
+    { "key": "screen_label_size", "domain": "select", "name": "Screen: Label Size", "objectIds": ["screen__label_size", "screen_label_size", "label_size_select"], "groups": ["settings"] },
     { "key": "screen_theme_auto_method", "domain": "select", "name": "Screen: Theme Auto Method", "groups": ["settings"] },
     { "key": "screen_theme_light_start", "domain": "text", "name": "Screen: Theme Light Start", "groups": ["settings"] },
     { "key": "screen_theme_dark_start", "domain": "text", "name": "Screen: Theme Dark Start", "groups": ["settings"] },

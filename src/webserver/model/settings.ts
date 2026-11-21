@@ -48,11 +48,22 @@ export function normalizeThemeMode(value: unknown): string {
 
 export function normalizeCardCurve(value: unknown): string {
   const preset = String(value || "").trim().toLowerCase();
-  return preset === "small" ? "Small" : preset === "large" ? "Large" : "Medium";
+  return preset === "Square".toLowerCase() ? "Square" : preset === "small" ? "Small" : preset === "large" ? "Large" : "Medium";
+}
+
+export function normalizeLabelSize(value: unknown): string {
+  const size = String(value || "").trim().toLowerCase();
+  return size === "small" ? "Small" : size === "large" ? "Large" : "Medium";
+}
+
+export function normalizeCardGap(value: unknown): number {
+  const gap = Math.round(Number(value));
+  return Number.isFinite(gap) ? Math.max(0, Math.min(24, gap)) : 8;
 }
 
 export function cardCurveRadius(baseRadius: number, preset: unknown, radii?: Readonly<Record<string, number>>): number {
   const curve = normalizeCardCurve(preset);
+  if (curve === "Square") return 0;
   if (radii?.[curve] !== undefined) return radii[curve];
   return Math.round(baseRadius * (curve === "Small" ? .6 : curve === "Medium" ? .8 : 1));
 }

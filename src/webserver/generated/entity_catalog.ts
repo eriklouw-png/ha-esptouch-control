@@ -533,6 +533,24 @@ export const ENTITY_CATALOG = {
         "card_curve_select"
       ]
     },
+    "screen_card_spacing": {
+      "domain": "number",
+      "name": "Screen: Card Spacing",
+      "objectIds": [
+        "screen__card_spacing",
+        "screen_card_spacing",
+        "card_gap_number"
+      ]
+    },
+    "screen_label_size": {
+      "domain": "select",
+      "name": "Screen: Label Size",
+      "objectIds": [
+        "screen__label_size",
+        "screen_label_size",
+        "label_size_select"
+      ]
+    },
     "screen_theme_auto_method": {
       "domain": "select",
       "name": "Screen: Theme Auto Method"
@@ -865,6 +883,8 @@ export const ENTITY_CATALOG = {
       "screen_brightness_mode",
       "screen_theme_mode",
       "screen_card_curve",
+      "screen_card_spacing",
+      "screen_label_size",
       "screen_theme_auto_method",
       "screen_theme_light_start",
       "screen_theme_dark_start",

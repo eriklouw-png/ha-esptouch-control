@@ -191,6 +191,7 @@ def package_file_text(device: dict) -> str:
             include_line("colors", "!include ../../common/config/colors.yaml"),
             include_line("button_order", "!include ../../common/config/button_order.yaml"),
             include_line("display_config", "!include ../../common/config/display.yaml"),
+            *([include_line("card_style", "!include ../../common/config/card_style.yaml")] if package.get("cardStyleControls", False) else []),
             button_package_block(device).rstrip(),
             "  # ---------------------------------------------------------------------------",
             "  # Addons",
@@ -370,6 +371,25 @@ def cfg_lines(device: dict) -> list[str]:
         medium_radius = int(substitutions.get("card_curve_medium_radius", "-1px").removesuffix("px"))
         radius_overrides = f", {small_radius}, {medium_radius}"
     lines.append(f"            cfg.card_corner_radius = card_curve_radius({base_radius}, id(card_curve_select).current_option(){radius_overrides});")
+    if device["package"].get("cardStyleControls", False):
+        lines.extend(
+            [
+                "            {",
+                "              // Card Spacing: gap between cards (also copied to subpages).",
+                "              float gap_setting = id(card_gap_number).state;",
+                "              int gap = std::isnan(gap_setting) ? 0 : static_cast<int>(gap_setting + 0.5f);",
+                "              lv_obj_set_style_pad_row(id(main_page)->obj, gap, LV_PART_MAIN);",
+                "              lv_obj_set_style_pad_column(id(main_page)->obj, gap, LV_PART_MAIN);",
+                "              // Label Size: card label font (subpages copy it from the first card).",
+                "              const std::string label_size = id(label_size_select).current_option();",
+                "              const lv_font_t *label_font = label_size == \"Small\"",
+                "                ? id(font_text_small)->get_lv_font()",
+                "                : label_size == \"Large\" ? id(font_text_body_large)->get_lv_font()",
+                "                : id(font_text_body)->get_lv_font();",
+                "              for (auto &slot : slots) lv_obj_set_style_text_font(slot.btn, label_font, LV_PART_MAIN);",
+                "            }",
+            ]
+        )
     if device.get("continuous_card_corners"):
         lines.append("            cfg.continuous_card_corners = true;")
     if device.get("info_only"):

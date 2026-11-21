@@ -36,8 +36,8 @@ import {
     parseThemeSunOffset,
 } from "../model/settings";
 import { syncThemeSettingsUi } from "./theme_settings_ui";
-import { syncCardCurveUi } from "./card_curve_ui";
-import { normalizeCardCurve } from "../model/settings";
+import { syncCardCurveUi, syncCardStyleExtrasUi } from "./card_curve_ui";
+import { normalizeCardCurve, normalizeCardGap, normalizeLabelSize } from "../model/settings";
 import type { UiRuntimeState } from "./state";
 import type { CoreFeature } from "./core";
 import { languageOptionsWithFallback, syncLanguageSelect } from "./language_state";
@@ -449,6 +449,16 @@ export function createAppStateEventHandlersFeature(
                 syncCardCurveUi(state, runtime);
                 syncPreviewOrientation(true);
                 renderPreview();
+            },
+            "number-screen__card_spacing": function (this: any, val?: any, d?: any) {
+                state.cardGap = normalizeCardGap(d && d.value !== undefined ? d.value : val);
+                state.cardGapSupported = true;
+                syncCardStyleExtrasUi(state, runtime);
+            },
+            "select-screen__label_size": function (this: any, val?: any, d?: any) {
+                state.labelSize = normalizeLabelSize(d.value || val);
+                state.labelSizeSupported = true;
+                syncCardStyleExtrasUi(state, runtime);
             },
             "select-screen__theme_auto_method": function (this: any, val?: any, d?: any) {
                 state.themeAutoMethod = normalizeThemeAutoMethod(d.value || val);

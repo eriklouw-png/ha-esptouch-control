@@ -604,6 +604,7 @@ select:
     restore_value: true
     initial_option: "Medium"
     options:
+      - "Square"
       - "Small"
       - "Medium"
       - "Large"

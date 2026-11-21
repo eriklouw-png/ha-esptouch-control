@@ -11,7 +11,7 @@
   "summary": {
     "deviceProfiles": 12,
     "cardTypes": 44,
-    "entityNames": 113,
+    "entityNames": 115,
     "icons": 500,
     "structuralIcons": 28,
     "compatibilityFixtureGroups": 2
@@ -1842,7 +1842,8 @@
           "deviceFontPackageKey": "fonts_device",
           "apiNavigateAction": true,
           "apiOpenModalAction": true,
-          "apiPanelConfigAction": true
+          "apiPanelConfigAction": true,
+          "cardStyleControls": true
         }
       },
       "settings": {
@@ -2454,7 +2455,8 @@
           "deviceFontPackageKey": "fonts_device",
           "apiNavigateAction": true,
           "apiOpenModalAction": true,
-          "apiPanelConfigAction": true
+          "apiPanelConfigAction": true,
+          "cardStyleControls": true
         }
       },
       "settings": {
@@ -8378,6 +8380,32 @@
           "screen__card_curve",
           "screen_card_curve",
           "card_curve_select"
+        ],
+        "groups": [
+          "settings"
+        ]
+      },
+      {
+        "key": "screen_card_spacing",
+        "domain": "number",
+        "name": "Screen: Card Spacing",
+        "objectIds": [
+          "screen__card_spacing",
+          "screen_card_spacing",
+          "card_gap_number"
+        ],
+        "groups": [
+          "settings"
+        ]
+      },
+      {
+        "key": "screen_label_size",
+        "domain": "select",
+        "name": "Screen: Label Size",
+        "objectIds": [
+          "screen__label_size",
+          "screen_label_size",
+          "label_size_select"
         ],
         "groups": [
           "settings"

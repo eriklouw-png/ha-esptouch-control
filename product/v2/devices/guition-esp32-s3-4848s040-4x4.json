@@ -177,7 +177,8 @@
           "button_radius": "8px"
         },
         "apiNavigateAction": true,
-        "apiPanelConfigAction": true
+        "apiPanelConfigAction": true,
+        "cardStyleControls": true
       }
     }
   }

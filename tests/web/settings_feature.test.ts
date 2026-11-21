@@ -6,7 +6,7 @@ import { createMediaPlaybackController } from "../../src/webserver/features/medi
 import { createVoiceServicesController } from "../../src/webserver/features/voice_services_controller";
 import { createClockBarController } from "../../src/webserver/features/clock_bar_controller";
 import { createScreenScheduleController } from "../../src/webserver/features/screen_schedule_controller";
-import { cardCurveRadius, normalizeCardCurve, normalizeThemeAutoMethod, normalizeThemeMode, normalizeTimeOfDay, parseThemeSunOffset } from "../../src/webserver/model/settings";
+import { cardCurveRadius, normalizeCardCurve, normalizeCardGap, normalizeLabelSize, normalizeThemeAutoMethod, normalizeThemeMode, normalizeTimeOfDay, parseThemeSunOffset } from "../../src/webserver/model/settings";
 import { PREVIEW_THEME_COLORS, previewEffectiveTheme, previewThemeCss } from "../../src/webserver/state/preview_theme";
 import { createBackupEnvelope, normalizeBackupEnvelope } from "../../src/webserver/model/backup";
 
@@ -44,6 +44,14 @@ export function runSettingsFeatureTests(): void {
     equal(cardCurveRadius(large!, "Medium"), medium, "Medium radius matches firmware rounding");
     equal(cardCurveRadius(large!, "Large"), large, "Large uses the configured panel radius");
   }
+  equal(normalizeCardCurve("Square"), "Square", "Square curve is a valid preset");
+  equal(cardCurveRadius(26, "Square"), 0, "Square removes the corner rounding");
+  equal(cardCurveRadius(26, "Square", { Small: 16, Medium: 21 }), 0, "Square ignores per-panel radii");
+  equal(normalizeLabelSize("large"), "Large", "label size normalizes");
+  equal(normalizeLabelSize(undefined), "Medium", "label size defaults to Medium");
+  equal(normalizeCardGap(40), 24, "card spacing is capped");
+  equal(normalizeCardGap(-3), 0, "card spacing cannot be negative");
+  equal(normalizeCardGap("abc"), 8, "card spacing falls back to the default");
   const s3Radii = { Small: 16, Medium: 21 };
   equal(cardCurveRadius(26, "Small", s3Radii), 16, "S3 Small radius");
   equal(cardCurveRadius(26, "Medium", s3Radii), 21, "S3 Medium radius");
