@@ -163,6 +163,9 @@ constexpr FrameLayout calculate_frame(
   layout.panel_height = request.screen_height - request.panel_top - request.panel_bottom;
 
   layout.back_size = scaled_px(tokens.back_button, layout.short_side, tokens);
+  // Small panels (short side below the 480px reference) must still keep the Back
+  // control at least one touch target in size.
+  if (layout.back_size < profile.base_touch_target) layout.back_size = profile.base_touch_target;
   layout.button_size = scaled_px(tokens.control_button, layout.short_side, tokens);
   layout.inset = scaled_px(tokens.inset, layout.short_side, tokens);
   if (layout.inset < 8) layout.inset = 8;
@@ -285,8 +288,10 @@ constexpr TabLayout calculate_tabs(
   layout.tab_size = shared_tab_size(profile, frame, tokens);
   layout.content_gap = shared_tab_content_gap(profile, frame, tokens);
 
+  // Panels narrower than 400px (e.g. 320px wide) cannot fit five 48px tabs beside
+  // the Back control, so they are allowed to shrink further.
   const int minimum_tab_size = uses_family(profile, LayoutFamily::COMPACT_PORTRAIT)
-    ? 48
+    ? (frame.short_side < 400 ? 28 : 48)
     : control_tab_min_size(profile);
   while (true) {
     layout.selected_tab_size = layout.tab_size + layout.tab_size / 8;

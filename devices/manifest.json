@@ -2098,7 +2098,7 @@
           "modal": {
             "layoutFamily": "compact-portrait",
             "density": "compact",
-            "memoryTier": "standard",
+            "memoryTier": "constrained",
             "baseTouchTarget": 46
           },
           "wrapTallLabels": false,

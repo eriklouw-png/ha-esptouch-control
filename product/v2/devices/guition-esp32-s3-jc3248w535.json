@@ -1,7 +1,7 @@
 {
   "profiles": {
     "platform": "esp32-s3",
-    "modal": "compact-portrait",
+    "modal": "compact-portrait-constrained",
     "fonts": "compact-panel"
   },
   "config": {

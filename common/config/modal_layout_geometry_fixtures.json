@@ -110,6 +110,65 @@
         "tabs": {"size": 48, "selectedSize": 54, "gap": 12, "frameWidth": 306, "frameHeight": 66, "safeLeft": 73, "rowLeft": 82, "contentGap": 16, "iconZoom": 180},
         "content": {"top": 100, "bottom": 418, "width": 434, "height": 318, "centerY": 41}
       }
+    },
+    {
+        "slug": "guition-esp32-s3-jc3248w535",
+        "profile": {
+            "family": "compact-portrait",
+            "density": "compact",
+            "memoryTier": "constrained",
+            "baseTouchTarget": 46
+        },
+        "viewport": {
+            "width": 320,
+            "height": 480
+        },
+        "panelInsets": {
+            "left": 5,
+            "top": 40,
+            "right": 5,
+            "bottom": 4
+        },
+        "expected": {
+            "panel": {
+                "x": 5,
+                "y": 40,
+                "width": 310,
+                "height": 436
+            },
+            "shortSide": 320,
+            "inset": 12,
+            "back": {
+                "size": 46,
+                "x": 20,
+                "y": 20
+            },
+            "buttonSize": 53,
+            "arc": {
+                "size": 286,
+                "stroke": 11,
+                "centerX": 0
+            },
+            "controlsCenterY": 119,
+            "tabs": {
+                "size": 35,
+                "selectedSize": 39,
+                "gap": 12,
+                "frameWidth": 237,
+                "frameHeight": 49,
+                "safeLeft": 72,
+                "rowLeft": 72,
+                "contentGap": 8,
+                "iconZoom": 180
+            },
+            "content": {
+                "top": 69,
+                "bottom": 424,
+                "width": 286,
+                "height": 355,
+                "centerY": 28
+            }
+        }
     }
   ]
 }

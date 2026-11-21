@@ -345,6 +345,18 @@
             }
           }
         }
+      },
+      "compact-portrait-constrained": {
+        "firmware": {
+          "display": {
+            "modal": {
+              "layoutFamily": "compact-portrait",
+              "density": "compact",
+              "memoryTier": "constrained",
+              "baseTouchTarget": 46
+            }
+          }
+        }
       }
     },
     "fonts": {
@@ -1558,7 +1570,7 @@
     "guition-esp32-s3-jc3248w535": {
       "profiles": {
         "platform": "esp32-s3",
-        "modal": "compact-portrait",
+        "modal": "compact-portrait-constrained",
         "fonts": "compact-panel"
       },
       "config": {
