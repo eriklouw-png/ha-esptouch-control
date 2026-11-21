@@ -79,7 +79,7 @@ def main() -> int:
         if not secrets.exists():
             secrets.write_text('wifi_ssid: "x"\nwifi_password: "xxxxxxxx"\n', encoding="utf-8")
         subprocess.run(
-            [args.esphome, "compile", str(profile), "-s", "firmware_version", args.version],
+            [args.esphome, "-s", "firmware_version", args.version, "compile", str(profile)],
             cwd=ROOT / "builds",
             check=True,
         )
