@@ -2085,9 +2085,7 @@
           "90",
           "180",
           "270"
-        ],
-        "default": "0",
-        "displayOffset": 0
+        ]
       },
       "internalRelays": [],
       "web": {
