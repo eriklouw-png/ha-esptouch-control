@@ -55,7 +55,7 @@ script:
           cfg.label_lines_tall = 3;
           cfg.modal_profile.layout_family = DisplayModalLayoutFamily::COMPACT_PORTRAIT;
           cfg.modal_profile.density = DisplayModalDensity::COMPACT;
-          cfg.modal_profile.memory_tier = DisplayModalMemoryTier::STANDARD;
+          cfg.modal_profile.memory_tier = DisplayModalMemoryTier::CONSTRAINED;
           cfg.modal_profile.base_touch_target = 46;
           cfg.icon_font = id(font_icon_main)->get_lv_font();
           cfg.sp_sensor_font = id(font_number_value)->get_lv_font();
@@ -179,7 +179,7 @@ script:
           cfg.label_lines_tall = 3;
           cfg.modal_profile.layout_family = DisplayModalLayoutFamily::COMPACT_PORTRAIT;
           cfg.modal_profile.density = DisplayModalDensity::COMPACT;
-          cfg.modal_profile.memory_tier = DisplayModalMemoryTier::STANDARD;
+          cfg.modal_profile.memory_tier = DisplayModalMemoryTier::CONSTRAINED;
           cfg.modal_profile.base_touch_target = 46;
           cfg.icon_font = id(font_icon_main)->get_lv_font();
           cfg.sp_sensor_font = id(font_number_value)->get_lv_font();
@@ -342,7 +342,7 @@ esphome:
             cfg.label_lines_tall = 3;
             cfg.modal_profile.layout_family = DisplayModalLayoutFamily::COMPACT_PORTRAIT;
             cfg.modal_profile.density = DisplayModalDensity::COMPACT;
-            cfg.modal_profile.memory_tier = DisplayModalMemoryTier::STANDARD;
+            cfg.modal_profile.memory_tier = DisplayModalMemoryTier::CONSTRAINED;
             cfg.modal_profile.base_touch_target = 46;
             cfg.icon_font = id(font_icon_main)->get_lv_font();
             cfg.sp_sensor_font = id(font_number_value)->get_lv_font();
@@ -457,7 +457,7 @@ esphome:
             cfg.label_lines_tall = 3;
             cfg.modal_profile.layout_family = DisplayModalLayoutFamily::COMPACT_PORTRAIT;
             cfg.modal_profile.density = DisplayModalDensity::COMPACT;
-            cfg.modal_profile.memory_tier = DisplayModalMemoryTier::STANDARD;
+            cfg.modal_profile.memory_tier = DisplayModalMemoryTier::CONSTRAINED;
             cfg.modal_profile.base_touch_target = 46;
             cfg.icon_font = id(font_icon_main)->get_lv_font();
             cfg.sp_sensor_font = id(font_number_value)->get_lv_font();
