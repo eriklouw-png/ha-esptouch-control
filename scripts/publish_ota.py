@@ -123,6 +123,11 @@ def main() -> int:
         ],
     }
     (out_dir / "native.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+    # The panel's setup page reads manifest.json and versions.json; it only accepts
+    # versions written like v1.0.4, so publish with a leading "v".
+    (out_dir / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+    versions = {"versions": [{"version": args.version, "release_url": RELEASE_URL, "ota": manifest["builds"][0]["ota"]}]}
+    (out_dir / "versions.json").write_text(json.dumps(versions, indent=2) + "\n", encoding="utf-8")
     print(f"Published {args.slug} {args.version}: {target.relative_to(ROOT)} ({target.stat().st_size} bytes, md5 {md5})")
     print(f"Manifest: {(out_dir / 'native.json').relative_to(ROOT)}")
     return 0

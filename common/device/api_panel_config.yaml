@@ -8,7 +8,9 @@
 #                                       slot 1..N: {slot, button, subpages[]}
 #   set_panel_config(slot, part, value) slot 0: button order; slot 1..N with
 #                                       part -1: card config, part 0..7: subpage
-#   refresh_panel_config()              redraw the grid after a batch of writes
+#   refresh_panel_config()              save the batch into the panel's stored configuration
+#                                       and redraw the grid (also done automatically
+#                                       2 seconds after the last write)
 #
 # The values are the same compact strings the web setup page stores. Opt in per
 # device with firmware.package.apiPanelConfigAction.
@@ -70,6 +72,7 @@ api:
 
     - action: refresh_panel_config
       then:
+        - lambda: 'id(espcontrol_app)->panel_config_sync();'
         - script.execute: refresh_button_grid
         - script.wait: refresh_button_grid
 

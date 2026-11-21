@@ -169,7 +169,24 @@ bool EspControlApp::panel_config_write(uint8_t slot, int part,
   if (text == nullptr) return false;
   if (value.size() > text->traits.get_max_length()) return false;
   text->make_call().set_value(value).perform();
+  // The setup page and the boot restore use the native document, not these text
+  // entities: bring it up to date once the writes of this batch are done.
+  this->set_timeout("panel_config_sync", 2000, [this]() { this->panel_config_sync(); });
   return true;
+}
+
+bool EspControlApp::panel_config_sync() {
+  NativeConfigurationRuntime *const runtime = native_configuration_runtime_.get();
+  configuration::ConfigurationService *const service = core_.configuration_service();
+  if (runtime == nullptr || service == nullptr || runtime->boot_buffer == nullptr ||
+      runtime->boot_configuration_pending || runtime->slot_capacity == 0) {
+    return false;
+  }
+  const configuration::ServiceLoadResult result =
+      service->refresh_legacy_shadow(runtime->boot_buffer, runtime->slot_capacity);
+  ESP_LOGI(TAG, "Panel configuration sync from text entities: status=%u ok=%d",
+           static_cast<unsigned>(result.status), result.ok() ? 1 : 0);
+  return result.ok();
 }
 
 bool EspControlApp::native_configuration_requested() const {
