@@ -207,6 +207,8 @@ def package_file_text(device: dict) -> str:
         lines.append(include_line("api_open_modal", "!include ../../common/device/api_open_modal.yaml"))
     if package.get("apiNavigateAction", True):
         lines.append(include_line("api_navigate", "!include ../../common/device/api_navigate.yaml"))
+    if package.get("apiPanelConfigAction", False):
+        lines.append(include_line("api_panel_config", "!include ../../common/device/api_panel_config.yaml"))
     lines.extend(
         [
             include_line("time_sync", "!include ../../common/addon/time.yaml"),

@@ -55,6 +55,13 @@ class EspControlApp : public esphome::Component {
       esphome::text::Text *subpage_5 = nullptr,
       esphome::text::Text *subpage_6 = nullptr,
       esphome::text::Text *subpage_7 = nullptr);
+  // Home Assistant-facing access to the saved panel configuration text fields.
+  // slot 0 is the button order. For slots 1..N, part -1 is the card config and
+  // parts 0..7 are the subpage chunks. Writes go through the same text call the
+  // web setup page uses, so persistence and grid refresh behave identically.
+  uint8_t panel_config_slot_count() const;
+  bool panel_config_read(uint8_t slot, int part, std::string *value) const;
+  bool panel_config_write(uint8_t slot, int part, const std::string &value);
   void set_panel_config_card_images_storage(bool enabled) {
     panel_config_card_images_storage_ = enabled;
   }

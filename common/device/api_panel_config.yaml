@@ -1,0 +1,80 @@
+# =============================================================================
+# API PANEL CONFIG ACTIONS - Home Assistant read/write access to the layout
+# =============================================================================
+# Lets Home Assistant (or an assistant working through it) read and change the
+# saved button layout without the panel's own web page:
+#
+#   get_panel_config(slot)              slot 0: {slots, button_order}
+#                                       slot 1..N: {slot, button, subpages[]}
+#   set_panel_config(slot, part, value) slot 0: button order; slot 1..N with
+#                                       part -1: card config, part 0..7: subpage
+#   refresh_panel_config()              redraw the grid after a batch of writes
+#
+# The values are the same compact strings the web setup page stores. Opt in per
+# device with firmware.package.apiPanelConfigAction.
+# =============================================================================
+
+api:
+  actions:
+    - action: get_panel_config
+      variables:
+        slot: int
+      supports_response: only
+      then:
+        - api.respond:
+            data: !lambda |-
+              auto &app = id(espcontrol_app);
+              std::string value;
+              if (slot <= 0) {
+                root["slots"] = app.panel_config_slot_count();
+                app.panel_config_read(0, -1, &value);
+                root["button_order"] = value;
+              } else {
+                root["slot"] = slot;
+                if (app.panel_config_read(static_cast<uint8_t>(slot), -1, &value)) {
+                  root["button"] = value;
+                }
+                JsonArray subpages = root["subpages"].to<JsonArray>();
+                for (int part = 0; part < 8; ++part) {
+                  if (!app.panel_config_read(static_cast<uint8_t>(slot), part, &value)) break;
+                  subpages.add(value);
+                }
+              }
+
+    - action: set_panel_config
+      variables:
+        slot: int
+        part: int
+        value: string
+      supports_response: status
+      then:
+        - lambda: |-
+            bool ok = slot >= 0 && slot < 256 &&
+                      id(espcontrol_app).panel_config_write(static_cast<uint8_t>(slot), part, value);
+            ESP_LOGI("panel_config", "set slot=%d part=%d len=%u ok=%d", slot, part,
+                     static_cast<unsigned>(value.size()), ok);
+            if (!ok) {
+              id(panel_config_write_failed) = true;
+            }
+        - if:
+            condition:
+              lambda: 'return id(panel_config_write_failed);'
+            then:
+              - lambda: 'id(panel_config_write_failed) = false;'
+              - api.respond:
+                  success: false
+                  error_message: "invalid slot/part or value too long"
+            else:
+              - api.respond:
+                  success: true
+
+    - action: refresh_panel_config
+      then:
+        - script.execute: refresh_button_grid
+        - script.wait: refresh_button_grid
+
+globals:
+  - id: panel_config_write_failed
+    type: bool
+    restore_value: no
+    initial_value: 'false'

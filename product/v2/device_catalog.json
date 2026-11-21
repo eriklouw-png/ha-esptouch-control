@@ -1514,7 +1514,8 @@
               "card_curve_medium_radius": "21px",
               "button_radius": "8px"
             },
-            "apiNavigateAction": true
+            "apiNavigateAction": true,
+            "apiPanelConfigAction": true
           }
         }
       }
@@ -1728,7 +1729,8 @@
               "card_curve_medium_radius": "21px",
               "button_radius": "8px"
             },
-            "apiNavigateAction": true
+            "apiNavigateAction": true,
+            "apiPanelConfigAction": true
           }
         }
       }

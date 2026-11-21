@@ -122,6 +122,7 @@ packages:
   api_remote_actions: !include ../../common/device/api_remote_actions.yaml
   api_open_modal:  !include ../../common/device/api_open_modal.yaml
   api_navigate:    !include ../../common/device/api_navigate.yaml
+  api_panel_config: !include ../../common/device/api_panel_config.yaml
   time_sync:       !include ../../common/addon/time.yaml
   backlight:       !include ../../common/addon/backlight.yaml
   bl_schedule:     !include ../../common/addon/backlight_schedule.yaml

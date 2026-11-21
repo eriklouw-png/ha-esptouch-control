@@ -1787,7 +1787,8 @@
           },
           "deviceFontPackageKey": "fonts_device",
           "apiNavigateAction": true,
-          "apiOpenModalAction": true
+          "apiOpenModalAction": true,
+          "apiPanelConfigAction": true
         }
       }
     },
@@ -2180,7 +2181,8 @@
           },
           "deviceFontPackageKey": "fonts_device",
           "apiNavigateAction": true,
-          "apiOpenModalAction": true
+          "apiOpenModalAction": true,
+          "apiPanelConfigAction": true
         }
       }
     }

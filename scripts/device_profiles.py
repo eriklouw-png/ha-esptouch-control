@@ -128,6 +128,7 @@ CANONICAL_PACKAGE_KEYS = (
     "backlightPwmFrequency",
     "apiNavigateAction",
     "apiOpenModalAction",
+    "apiPanelConfigAction",
 )
 
 
@@ -676,6 +677,7 @@ def validate_package(slug: str, device: dict[str, Any], errors: list[str]) -> No
         "touchscreenPackage",
         "apiNavigateAction",
         "apiOpenModalAction",
+        "apiPanelConfigAction",
         "esp32C6FirmwareUpdate",
     ):
         if key in package and not isinstance(package[key], bool):

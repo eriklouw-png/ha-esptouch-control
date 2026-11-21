@@ -121,6 +121,57 @@ void EspControlApp::set_panel_config_button(
                subpage_5, subpage_6, subpage_7}};
 }
 
+uint8_t EspControlApp::panel_config_slot_count() const {
+  uint8_t count = 0;
+  for (const PanelConfigTextSources &sources : panel_config_button_texts_) {
+    if (sources.button != nullptr) count++;
+  }
+  return count;
+}
+
+namespace {
+esphome::text::Text *panel_config_text_for(
+    uint8_t slot, int part, esphome::text::Text *button_order,
+    esphome::text::Text *button, const esphome::text::Text *const *subpages,
+    size_t subpage_count) {
+  if (slot == 0) return button_order;
+  if (part == -1) return button;
+  if (part < 0 || static_cast<size_t>(part) >= subpage_count) return nullptr;
+  return const_cast<esphome::text::Text *>(subpages[part]);
+}
+}  // namespace
+
+bool EspControlApp::panel_config_read(uint8_t slot, int part,
+                                      std::string *value) const {
+  if (value == nullptr || slot > panel_config_button_texts_.size()) return false;
+  const PanelConfigTextSources empty{};
+  const PanelConfigTextSources &sources =
+      slot == 0 ? empty : panel_config_button_texts_[slot - 1];
+  const esphome::text::Text *subpages[8];
+  for (size_t i = 0; i < 8; ++i) subpages[i] = sources.subpages[i];
+  esphome::text::Text *text = panel_config_text_for(
+      slot, part, panel_config_button_order_, sources.button, subpages, 8);
+  if (text == nullptr) return false;
+  *value = text->state;
+  return true;
+}
+
+bool EspControlApp::panel_config_write(uint8_t slot, int part,
+                                       const std::string &value) {
+  if (slot > panel_config_button_texts_.size()) return false;
+  const PanelConfigTextSources empty{};
+  const PanelConfigTextSources &sources =
+      slot == 0 ? empty : panel_config_button_texts_[slot - 1];
+  const esphome::text::Text *subpages[8];
+  for (size_t i = 0; i < 8; ++i) subpages[i] = sources.subpages[i];
+  esphome::text::Text *text = panel_config_text_for(
+      slot, part, panel_config_button_order_, sources.button, subpages, 8);
+  if (text == nullptr) return false;
+  if (value.size() > text->traits.get_max_length()) return false;
+  text->make_call().set_value(value).perform();
+  return true;
+}
+
 bool EspControlApp::native_configuration_requested() const {
   return panel_config_device_profile_ != nullptr &&
          panel_config_button_order_ != nullptr;
