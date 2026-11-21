@@ -53,9 +53,9 @@ script:
           cfg.subpage_chevron_text_width_percent = 96;
           cfg.label_lines = 2;
           cfg.label_lines_tall = 3;
-          cfg.modal_profile.layout_family = DisplayModalLayoutFamily::COMPACT_SQUARE;
+          cfg.modal_profile.layout_family = DisplayModalLayoutFamily::COMPACT_PORTRAIT;
           cfg.modal_profile.density = DisplayModalDensity::COMPACT;
-          cfg.modal_profile.memory_tier = DisplayModalMemoryTier::CONSTRAINED;
+          cfg.modal_profile.memory_tier = DisplayModalMemoryTier::STANDARD;
           cfg.modal_profile.base_touch_target = 46;
           cfg.icon_font = id(font_icon_main)->get_lv_font();
           cfg.sp_sensor_font = id(font_number_value)->get_lv_font();
@@ -82,11 +82,10 @@ script:
           };
           static esphome::artwork_image::ArtworkImage *image_card_downloaders[] = {
             id(image_card_download_1),
-            id(image_card_download_2),
           };
           cfg.image_card_images = image_card_downloaders;
           cfg.image_card_modal_image = id(image_card_modal_download_1);
-          cfg.image_card_image_count = 2;
+          cfg.image_card_image_count = 1;
           cfg.home_assistant_base_url = []() {
             std::string base = id(cover_art_home_assistant_base_url);
             while (!base.empty() && base.back() == '/') base.pop_back();
@@ -177,9 +176,9 @@ script:
           cfg.subpage_chevron_text_width_percent = 96;
           cfg.label_lines = 2;
           cfg.label_lines_tall = 3;
-          cfg.modal_profile.layout_family = DisplayModalLayoutFamily::COMPACT_SQUARE;
+          cfg.modal_profile.layout_family = DisplayModalLayoutFamily::COMPACT_PORTRAIT;
           cfg.modal_profile.density = DisplayModalDensity::COMPACT;
-          cfg.modal_profile.memory_tier = DisplayModalMemoryTier::CONSTRAINED;
+          cfg.modal_profile.memory_tier = DisplayModalMemoryTier::STANDARD;
           cfg.modal_profile.base_touch_target = 46;
           cfg.icon_font = id(font_icon_main)->get_lv_font();
           cfg.sp_sensor_font = id(font_number_value)->get_lv_font();
@@ -206,11 +205,10 @@ script:
           };
           static esphome::artwork_image::ArtworkImage *image_card_downloaders[] = {
             id(image_card_download_1),
-            id(image_card_download_2),
           };
           cfg.image_card_images = image_card_downloaders;
           cfg.image_card_modal_image = id(image_card_modal_download_1);
-          cfg.image_card_image_count = 2;
+          cfg.image_card_image_count = 1;
           cfg.home_assistant_base_url = []() {
             std::string base = id(cover_art_home_assistant_base_url);
             while (!base.empty() && base.back() == '/') base.pop_back();
@@ -340,9 +338,9 @@ esphome:
             cfg.subpage_chevron_text_width_percent = 96;
             cfg.label_lines = 2;
             cfg.label_lines_tall = 3;
-            cfg.modal_profile.layout_family = DisplayModalLayoutFamily::COMPACT_SQUARE;
+            cfg.modal_profile.layout_family = DisplayModalLayoutFamily::COMPACT_PORTRAIT;
             cfg.modal_profile.density = DisplayModalDensity::COMPACT;
-            cfg.modal_profile.memory_tier = DisplayModalMemoryTier::CONSTRAINED;
+            cfg.modal_profile.memory_tier = DisplayModalMemoryTier::STANDARD;
             cfg.modal_profile.base_touch_target = 46;
             cfg.icon_font = id(font_icon_main)->get_lv_font();
             cfg.sp_sensor_font = id(font_number_value)->get_lv_font();
@@ -369,11 +367,10 @@ esphome:
             };
             static esphome::artwork_image::ArtworkImage *image_card_downloaders[] = {
               id(image_card_download_1),
-              id(image_card_download_2),
             };
             cfg.image_card_images = image_card_downloaders;
             cfg.image_card_modal_image = id(image_card_modal_download_1);
-            cfg.image_card_image_count = 2;
+            cfg.image_card_image_count = 1;
             cfg.home_assistant_base_url = []() {
               std::string base = id(cover_art_home_assistant_base_url);
               while (!base.empty() && base.back() == '/') base.pop_back();
@@ -455,9 +452,9 @@ esphome:
             cfg.subpage_chevron_text_width_percent = 96;
             cfg.label_lines = 2;
             cfg.label_lines_tall = 3;
-            cfg.modal_profile.layout_family = DisplayModalLayoutFamily::COMPACT_SQUARE;
+            cfg.modal_profile.layout_family = DisplayModalLayoutFamily::COMPACT_PORTRAIT;
             cfg.modal_profile.density = DisplayModalDensity::COMPACT;
-            cfg.modal_profile.memory_tier = DisplayModalMemoryTier::CONSTRAINED;
+            cfg.modal_profile.memory_tier = DisplayModalMemoryTier::STANDARD;
             cfg.modal_profile.base_touch_target = 46;
             cfg.icon_font = id(font_icon_main)->get_lv_font();
             cfg.sp_sensor_font = id(font_number_value)->get_lv_font();
@@ -484,11 +481,10 @@ esphome:
             };
             static esphome::artwork_image::ArtworkImage *image_card_downloaders[] = {
               id(image_card_download_1),
-              id(image_card_download_2),
             };
             cfg.image_card_images = image_card_downloaders;
             cfg.image_card_modal_image = id(image_card_modal_download_1);
-            cfg.image_card_image_count = 2;
+            cfg.image_card_image_count = 1;
             cfg.home_assistant_base_url = []() {
               std::string base = id(cover_art_home_assistant_base_url);
               while (!base.empty() && base.back() == '/') base.pop_back();
