@@ -1,0 +1,56 @@
+{
+  "profiles": {
+    "platform": "esp32-p4",
+    "display": "jc8012p4a1-1280x800",
+    "modal": "large-landscape",
+    "fonts": "large-panel-p4",
+    "network": "c6-firmware-update",
+    "artwork": "landscape-1280x800"
+  },
+  "config": {
+    "layout": {
+      "portraitSlots": 18
+    },
+    "public": {
+      "name": "Guition JC8012P4A1 V3 (production silicon)",
+      "docsPath": "/screens/jc8012p4a1-v3"
+    },
+    "web": {
+      "portrait": {
+        "slots": 18
+      },
+      "continuousCorners": true,
+      "btn": {
+        "smallTextSize": 1.5625
+      }
+    },
+    "firmware": {
+      "package": {
+        "substitutions": {
+          "button_radius": "11px"
+        }
+      }
+    }
+  },
+  "overrides": {
+    "layout": {
+      "portraitCols": 3
+    },
+    "web": {
+      "portrait": {
+        "cols": 3,
+        "rows": 6
+      },
+      "grid": {
+        "gap": 0.78125
+      }
+    },
+    "firmware": {
+      "package": {
+        "substitutions": {
+          "clock_font_size": "\"200\""
+        }
+      }
+    }
+  }
+}

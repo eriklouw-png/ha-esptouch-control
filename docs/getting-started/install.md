@@ -1,0 +1,87 @@
+---
+title: Install EspControl on a Home Assistant Touchscreen
+titleTemplate: :title
+description:
+  How to flash EspControl firmware to a supported ESP32 touchscreen, connect it to WiFi, and add it to Home Assistant.
+---
+
+# Install EspControl on a Home Assistant Touchscreen
+
+Flash the EspControl firmware to your supported ESP32 display directly from your browser — no special software or technical knowledge required.
+
+## Before You Start
+
+- Identify your exact [supported screen and hardware revision](/screens/).
+- Use Chrome or Edge on a desktop computer and a USB-C **data** cable.
+- Have your 2.4 GHz WiFi name and password ready, with Home Assistant reachable on the same local network.
+- Add at least one light, switch, or sensor to Home Assistant so you can test the panel after pairing.
+
+Normal browser installation does not require ESPHome Device Builder or writing YAML. You will install firmware, connect WiFi, pair with Home Assistant, enable actions, and test your first card.
+
+::: tip Prefer ESPHome?
+If you want to compile and install the firmware yourself, use the [Manual Setup guide](/getting-started/manual-esphome-setup).
+:::
+
+## Flash the Firmware
+
+Connect the display to your computer with the USB-C cable, choose your device and hardware version, then click the install button. Select the hardware version that matches your panel; no version is preselected for models with multiple revisions. For the 4.3-inch JC4880P443, select V3 only for SKU 10150002-V3 with an ESP32-P4 v3.x chip; see the [V3 guide](/screens/jc4880p443-v3) if a previous incompatible flash left it dark.
+
+<EspInstallSelector />
+
+## Having Unreliable Wifi on a P4 Panel?
+
+For repeated disconnections or failed initial setup, follow the [P4 WiFi checks](/getting-started/troubleshooting#a-p4-panel-has-unreliable-wifi).
+
+::: tip Which cable?
+If the install button doesn't detect your device, try a different USB-C cable. Charge-only cables (often thinner and cheaper) won't work — you need one that supports data transfer.
+:::
+
+### Step by Step
+
+1. **Plug in the display** using the USB-C cable. If your computer asks to install drivers, allow it.
+2. **Choose your device and hardware version** above, then click **Install EspControl**. A dialog will ask you to choose a serial port — select the one that appeared when you plugged in the display.
+3. **Wait for the flash to complete.** This takes a few minutes. You'll see a progress bar. Don't disconnect the cable until it finishes.
+4. **The display restarts** and shows a loading screen.
+
+## Connect to WiFi
+
+After flashing, the display needs to connect to your WiFi network.
+
+Configure WiFi through the display's setup hotspot:
+
+1. **The display creates a hotspot.** It can take up to **90 seconds** to appear. Connect to the `EspControl_XXXX` network named on the display from your phone or laptop; `XXXX` is the last four characters of the device MAC address. A custom hotspot name configured in ESPHome is kept.
+2. **A setup page opens automatically** (captive portal). If it doesn't, open a browser and go to `192.168.4.1`.
+3. **Choose your WiFi network** from **Available Networks** and enter your password, then select **Save**. You can also type a network name manually.
+4. When **WiFi details saved** appears, **reconnect your phone or laptop to your home WiFi**, then follow the display's instructions to continue setup.
+
+::: tip If the hotspot doesn't appear
+Power-cycle the display by unplugging and re-plugging the USB-C cable. The hotspot only appears when the display can't connect to a saved WiFi network, and it may take up to **90 seconds** after startup or a WiFi outage.
+:::
+
+## Add to Home Assistant
+
+Once the display is on your WiFi network, Home Assistant should discover it automatically.
+
+1. **Open Home Assistant** in your browser.
+2. **Look for a notification** in the bottom left — it should say a new device was discovered. If you don't see one, go to **Settings > Devices & Services** and look for a new **ESPHome** entry.
+3. **Click "Configure"** and follow the prompts to add the device.
+
+This connection provides device states and controls. The clock normally uses network time, with Home Assistant as a fallback. After adding the device, you need to [allow it to perform Home Assistant actions](/getting-started/home-assistant-actions) so the touchscreen can control your devices.
+
+## Configure Your Panel
+
+With the display connected to WiFi and paired with Home Assistant, you're ready to set it up.
+
+1. **Find the device's address.** It's shown on the display screen. You can also find it in your router's device list or in **Home Assistant > Settings > Devices & Services > ESPHome** (click the device, then look for the IP address).
+2. **Open that address in a browser** — for example, `http://espcontrol.local`. This opens the device's built-in web page.
+3. **Add your cards.** On the **Layout** tab, tap an empty slot and choose the card type you want. For example, a **Switch** card controls a Home Assistant entity, while a **Sensor** card displays a reading.
+4. **Adjust your settings.** Use **Screen** for appearance, brightness, rotation, and sleep options, and **System** for language, time, temperature, and system controls.
+5. **Tap "Apply Configuration"** when you're done. The display restarts with your new settings.
+
+That's it — your panel is ready to use. See the [Setup](/features/setup) guide for a full walkthrough of every setting.
+
+## Confirm It Works
+
+Add one Switch or Light card using an entity that already works in Home Assistant. Tap it on the panel and confirm the real device changes. Change it in Home Assistant and confirm the panel follows. If the state displays but tapping does nothing, check [actions permission](/getting-started/home-assistant-actions).
+
+Next: [Build your panel](/guides/), or use [Troubleshooting](/getting-started/troubleshooting) if setup fails.

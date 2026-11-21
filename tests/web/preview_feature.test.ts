@@ -1,0 +1,79 @@
+import {
+  cardPreviewTextColor,
+  cardProgressColor,
+  cardTypePickerOptions,
+  clampMenuPosition,
+  closestGridCell,
+  defaultCardTypeForPicker,
+  infoOnlyCardVisible,
+  previewValue,
+  swapGridCell,
+} from "../../src/webserver/features/preview";
+
+function equal<T>(actual: T, expected: T, message: string): void {
+  if (actual !== expected) throw new Error(`${message}: expected ${String(expected)}, received ${String(actual)}`);
+}
+
+function deepEqual(actual: unknown, expected: unknown, message: string): void {
+  const actualText = JSON.stringify(actual);
+  const expectedText = JSON.stringify(expected);
+  if (actualText !== expectedText) throw new Error(`${message}: expected ${expectedText}, received ${actualText}`);
+}
+
+export function runPreviewFeatureTests(): void {
+  equal(cardPreviewTextColor("FFFFFF"), "#212121", "white card backgrounds use dark text like the device");
+  equal(cardPreviewTextColor("FFEB3B"), "#212121", "bright yellow card backgrounds use dark text");
+  equal(cardPreviewTextColor("313131"), "#FFFFFF", "dark card backgrounds retain white text");
+  for (const colour of ["FF0000", "F6402C", "FF8C00", "1093F5", "46AF4A", "009687", "00BBD5", "00BCD4", "039BE5", "4FB9ED", "FF9800", "B2B2B2"]) {
+    equal(cardPreviewTextColor(colour), "#FFFFFF", "mid-tone colour " + colour + " retains white content");
+  }
+  for (const colour of ["4DD0E1", "88C440", "CCDD1E", "FFEC16", "FFC100", "B3B3B3", "BABABA", "BBBBBB", "BFEAFF"]) {
+    equal(cardPreviewTextColor(colour), "#212121", "light colour " + colour + " uses dark content");
+  }
+  for (const [base, fill] of [["00BCD4", "4DD0E1"], ["FFEC16", "B3A50F"], ["FFFFFF", "B3B3B3"], ["FF8C00", "FFAF4D"], ["9D9D9D", "BABABA"]]) {
+    equal(cardProgressColor(base!), fill!, "media progress stays distinct on " + base);
+  }
+  equal(cardProgressColor("invalid"), "", "invalid progress colours use the theme default");
+  equal(previewValue({ iconHtml: "custom" }, "iconHtml", "fallback"), "custom", "custom preview values win");
+  equal(previewValue(null, "iconHtml", "fallback"), "fallback", "missing preview values use fallback");
+  equal(infoOnlyCardVisible("sensor", true), true, "sensors remain visible in info-only mode");
+  equal(infoOnlyCardVisible("action", true), false, "actions are hidden in info-only mode");
+  equal(defaultCardTypeForPicker("climate"), "climate_control", "picker aliases retain their defaults");
+
+  const definitions = {
+    action: { label: "Action", allowInSubpage: true },
+    climate: { label: "Climate", allowInSubpage: false },
+    climate_control: { label: "Climate controls", pickerKey: "climate", allowInSubpage: false },
+    sensor: { label: "Sensor", allowInSubpage: true },
+    wifi_qr: { label: "Wifi Sharing", allowInSubpage: true },
+    wifi_qr_card: { label: "QR Card", pickerKey: "wifi_qr", allowInSubpage: true },
+  };
+  deepEqual(
+    cardTypePickerOptions(definitions, [], false, true, null).map((option) => option.key),
+    ["action", "sensor", "wifi_qr"],
+    "subpage picker filters unsupported and aliased entries",
+  );
+  const infoOnlyOptions = cardTypePickerOptions(definitions, [], true, false, "action");
+  equal(infoOnlyOptions[0]?.key, "action", "selected hidden type remains visible for editing");
+  equal(infoOnlyOptions[0]?.disabled, true, "selected hidden type is labelled unavailable");
+  equal(infoOnlyOptions[1]?.key, "sensor", "supported info-only card remains selectable");
+
+  equal(
+    swapGridCell({ x: 99, y: 75 }, { left: 0, top: 0, right: 100, bottom: 100 }, 2, 2),
+    3,
+    "swap targeting resolves the containing grid cell",
+  );
+  equal(
+    closestGridCell({ x: 24, y: 10 }, [
+      { pos: 0, left: 0, top: 0, right: 10, bottom: 20 },
+      { pos: 1, left: 20, top: 0, right: 30, bottom: 20 },
+    ]),
+    1,
+    "drag targeting chooses the closest rendered cell",
+  );
+  deepEqual(
+    clampMenuPosition({ x: 198, y: 99 }, 40, 30, 200, 100),
+    { x: 156, y: 66 },
+    "context menus stay inside the viewport",
+  );
+}
