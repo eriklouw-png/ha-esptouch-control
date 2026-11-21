@@ -187,7 +187,8 @@
         "esp32-p4-86",
         "guition-esp32-s3-4848s040",
         "guition-esp32-p4-jc1060p470-v3",
-        "guition-esp32-s3-jc3248w535"
+        "guition-esp32-s3-jc3248w535",
+        "guition-esp32-s3-4848s040-4x4"
       ]
     }
   },

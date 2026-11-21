@@ -264,6 +264,30 @@
       "rotation": true,
       "ethernetManualInstall": false,
       "subpages": true
+    },
+    {
+      "slug": "guition-esp32-s3-4848s040-4x4",
+      "installSlug": "guition-esp32-s3-4848s040-4x4",
+      "name": "Guition 4848S040 (4x4)",
+      "docsPath": "/screens/4848s040-4x4",
+      "screenSize": "4 inches",
+      "resolution": "480 x 480",
+      "orientation": "Square",
+      "slots": 16,
+      "imageSlots": 2,
+      "imageCardTypes": [
+        "image",
+        "media_cover_art"
+      ],
+      "grid": {
+        "rows": 4,
+        "cols": 4
+      },
+      "chipFamily": "ESP32-S3",
+      "relays": 3,
+      "rotation": true,
+      "ethernetManualInstall": false,
+      "subpages": true
     }
   ]
 }

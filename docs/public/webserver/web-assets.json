@@ -2,9 +2,9 @@
   "schemaVersion": 1,
   "bundles": [
     {
-      "id": "a7855fd4296866e8ebb4cf40d2242059b31f88d0497f4d65e1a342fb57d33313",
-      "sha256": "a7855fd4296866e8ebb4cf40d2242059b31f88d0497f4d65e1a342fb57d33313",
-      "path": "bundles/a7855fd4296866e8ebb4cf40d2242059b31f88d0497f4d65e1a342fb57d33313/www.js",
+      "id": "ed0e4b9c1a8dfd5188d3f7a764036c789e749e0674f53bc1e477e26fe01058fb",
+      "sha256": "ed0e4b9c1a8dfd5188d3f7a764036c789e749e0674f53bc1e477e26fe01058fb",
+      "path": "bundles/ed0e4b9c1a8dfd5188d3f7a764036c789e749e0674f53bc1e477e26fe01058fb/www.js",
       "deviceProfiles": [
         "guition-esp32-p4-jc1060p470",
         "guition-esp32-p4-jc1060p470-v2",
@@ -16,7 +16,8 @@
         "esp32-p4-86",
         "guition-esp32-s3-4848s040",
         "guition-esp32-p4-jc1060p470-v3",
-        "guition-esp32-s3-jc3248w535"
+        "guition-esp32-s3-jc3248w535",
+        "guition-esp32-s3-4848s040-4x4"
       ],
       "firmwareVersions": [
         "dev"
@@ -24,9 +25,9 @@
       "webAssetVersion": 2
     },
     {
-      "id": "a7855fd4296866e8ebb4cf40d2242059b31f88d0497f4d65e1a342fb57d33313",
-      "sha256": "a7855fd4296866e8ebb4cf40d2242059b31f88d0497f4d65e1a342fb57d33313",
-      "path": "bundles/a7855fd4296866e8ebb4cf40d2242059b31f88d0497f4d65e1a342fb57d33313/www.js",
+      "id": "ed0e4b9c1a8dfd5188d3f7a764036c789e749e0674f53bc1e477e26fe01058fb",
+      "sha256": "ed0e4b9c1a8dfd5188d3f7a764036c789e749e0674f53bc1e477e26fe01058fb",
+      "path": "bundles/ed0e4b9c1a8dfd5188d3f7a764036c789e749e0674f53bc1e477e26fe01058fb/www.js",
       "deviceProfiles": [
         "guition-esp32-p4-jc1060p470",
         "guition-esp32-p4-jc1060p470-v2",
@@ -38,7 +39,8 @@
         "esp32-p4-86",
         "guition-esp32-s3-4848s040",
         "guition-esp32-p4-jc1060p470-v3",
-        "guition-esp32-s3-jc3248w535"
+        "guition-esp32-s3-jc3248w535",
+        "guition-esp32-s3-4848s040-4x4"
       ],
       "firmwareVersions": [
         "dev"
@@ -60,7 +62,8 @@
         "esp32-p4-86",
         "guition-esp32-s3-4848s040",
         "guition-esp32-p4-jc1060p470-v3",
-        "guition-esp32-s3-jc3248w535"
+        "guition-esp32-s3-jc3248w535",
+        "guition-esp32-s3-4848s040-4x4"
       ],
       "firmwareVersions": [
         "v2.10.0",
@@ -86,7 +89,8 @@
         "esp32-p4-86",
         "guition-esp32-s3-4848s040",
         "guition-esp32-p4-jc1060p470-v3",
-        "guition-esp32-s3-jc3248w535"
+        "guition-esp32-s3-jc3248w535",
+        "guition-esp32-s3-4848s040-4x4"
       ],
       "firmwareVersions": [
         "v2.10.0",

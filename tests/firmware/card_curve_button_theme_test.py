@@ -23,6 +23,7 @@ BUTTON_RADII = {
     "esp32-p4-86": 12,
     "guition-esp32-s3-4848s040": 8,
     "guition-esp32-s3-jc3248w535": 8,
+    "guition-esp32-s3-4848s040-4x4": 8,
 }
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument("--theme", type=Path, default=ROOT / "common/theme/button.yaml")
