@@ -22,7 +22,8 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-RELEASE_URL = "https://github.com/eriklouw-png/ha-esptouch-control"
+REPO = "eriklouw-png/ha-esptouch-control"
+RELEASE_URL = f"https://github.com/{REPO}"
 CHIP_FAMILIES = {"esp32-s3": "ESP32-S3", "esp32-p4": "ESP32-P4"}
 
 
@@ -46,6 +47,18 @@ def prepare_profile(slug: str) -> Path:
         raise PublishError(f"{source} not found")
     text = source.read_text(encoding="utf-8")
     text = text.replace("file:///config", f"file://{ROOT}").replace("/config/common", f"{ROOT}/common")
+    # No fixed WiFi in the image. With a compiled-in ssid ESPHome keys the saved
+    # WiFi to the build, so every update would forget it; without one the panel
+    # keeps the WiFi entered on its setup screen across updates.
+    text = re.sub(r"^  # (Compile-only|deployed)[^\n]*\n", "", text, flags=re.M)
+    text = re.sub(r'^  ssid: "ESPControl"\n', "", text, flags=re.M)
+    text = re.sub(r'^  password: "espcontrol"\n', "", text, flags=re.M)
+    # Lets the ESPHome Builder in Home Assistant offer to adopt this panel.
+    if "dashboard_import:" not in text:
+        text = text.rstrip("\n") + (
+            "\n\ndashboard_import:\n"
+            f"  package_import_url: github://{REPO}/devices/{slug}/esphome.yaml@main\n"
+        )
     target = ROOT / "builds" / f".release-{slug}.yaml"
     target.write_text(text, encoding="utf-8")
     return target

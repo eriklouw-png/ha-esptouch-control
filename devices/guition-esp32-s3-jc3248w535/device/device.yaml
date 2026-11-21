@@ -8,7 +8,7 @@
 
 substitutions:
   espcontrol_component_url: "https://github.com/eriklouw-png/ha-esptouch-control"
-  espcontrol_component_ref: "claude/beautiful-bardeen-l23i21"
+  espcontrol_component_ref: "main"
   icon_font_file: "https://raw.githubusercontent.com/eriklouw-png/ha-esptouch-control/${espcontrol_component_ref}/common/assets/fonts/espcontrol-icons.ttf"
 
 # ---------------------------------------------------------------------------

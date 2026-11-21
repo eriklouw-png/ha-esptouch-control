@@ -25,10 +25,12 @@ wifi:
 # ---------------------------------------------------------------------------
 packages:
   api_encryption:
-    url: https://github.com/jtenniswood/espcontrol/
+    url: https://github.com/eriklouw-png/ha-esptouch-control/
     file: common/addon/api_encryption_dynamic.yaml
+    ref: main
     refresh: 1s
   setup:
-    url: https://github.com/jtenniswood/espcontrol/
+    url: https://github.com/eriklouw-png/ha-esptouch-control/
     file: devices/guition-esp32-s3-4848s040/packages.yaml
+    ref: main
     refresh: 1s
