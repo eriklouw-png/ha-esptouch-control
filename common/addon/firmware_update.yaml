@@ -8,6 +8,10 @@
 # =============================================================================
 
 substitutions:
+  # Where the panel looks for new firmware. Override firmware_update_manifest_url
+  # in a build or device config to host updates somewhere else.
+  firmware_update_base_url: "https://raw.githubusercontent.com/eriklouw-png/ha-esptouch-control/main/firmware"
+  firmware_update_manifest_url: "${firmware_update_base_url}/${firmware_manifest_slug}/native.json"
   firmware_version: "dev"
 
 esphome:
@@ -197,7 +201,7 @@ update:
     id: firmware_update
     name: "${entity_firmware_update}"
     internal: true
-    source: https://jtenniswood.github.io/espcontrol/firmware/${firmware_manifest_slug}/native.json
+    source: ${firmware_update_manifest_url}
     update_interval: never
     on_update_available:
       then:
