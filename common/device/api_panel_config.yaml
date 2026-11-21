@@ -23,20 +23,20 @@ api:
       then:
         - api.respond:
             data: !lambda |-
-              auto &app = id(espcontrol_app);
+              auto *app = id(espcontrol_app);
               std::string value;
               if (slot <= 0) {
-                root["slots"] = app.panel_config_slot_count();
-                app.panel_config_read(0, -1, &value);
+                root["slots"] = app->panel_config_slot_count();
+                app->panel_config_read(0, -1, &value);
                 root["button_order"] = value;
               } else {
                 root["slot"] = slot;
-                if (app.panel_config_read(static_cast<uint8_t>(slot), -1, &value)) {
+                if (app->panel_config_read(static_cast<uint8_t>(slot), -1, &value)) {
                   root["button"] = value;
                 }
                 JsonArray subpages = root["subpages"].to<JsonArray>();
                 for (int part = 0; part < 8; ++part) {
-                  if (!app.panel_config_read(static_cast<uint8_t>(slot), part, &value)) break;
+                  if (!app->panel_config_read(static_cast<uint8_t>(slot), part, &value)) break;
                   subpages.add(value);
                 }
               }
@@ -50,7 +50,7 @@ api:
       then:
         - lambda: |-
             bool ok = slot >= 0 && slot < 256 &&
-                      id(espcontrol_app).panel_config_write(static_cast<uint8_t>(slot), part, value);
+                      id(espcontrol_app)->panel_config_write(static_cast<uint8_t>(slot), part, value);
             ESP_LOGI("panel_config", "set slot=%d part=%d len=%u ok=%d", slot, part,
                      static_cast<unsigned>(value.size()), ok);
             if (!ok) {
