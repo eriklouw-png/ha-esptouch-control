@@ -93,6 +93,7 @@ substitutions:
   entity_screen_theme_mode: "Screen: Theme Mode"
   entity_screen_card_curve: "Screen: Card Curve"
   entity_screen_card_spacing: "Screen: Card Spacing"
+  entity_screen_card_alignment: "Screen: Card Alignment"
   entity_screen_label_size: "Screen: Label Size"
   entity_screen_theme_auto_method: "Screen: Theme Auto Method"
   entity_screen_theme_light_start: "Screen: Theme Light Start"

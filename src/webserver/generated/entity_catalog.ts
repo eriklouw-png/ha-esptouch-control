@@ -542,6 +542,15 @@ export const ENTITY_CATALOG = {
         "card_gap_number"
       ]
     },
+    "screen_card_alignment": {
+      "domain": "select",
+      "name": "Screen: Card Alignment",
+      "objectIds": [
+        "screen__card_alignment",
+        "screen_card_alignment",
+        "card_alignment_select"
+      ]
+    },
     "screen_label_size": {
       "domain": "select",
       "name": "Screen: Label Size",
@@ -884,6 +893,7 @@ export const ENTITY_CATALOG = {
       "screen_theme_mode",
       "screen_card_curve",
       "screen_card_spacing",
+      "screen_card_alignment",
       "screen_label_size",
       "screen_theme_auto_method",
       "screen_theme_light_start",

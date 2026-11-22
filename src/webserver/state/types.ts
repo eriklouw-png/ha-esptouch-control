@@ -200,6 +200,8 @@ export interface AppState {
   themeMode: string;
   cardCurve: string;
   cardCurveSupported: boolean;
+  cardAlignment: string;
+  cardAlignmentSupported: boolean;
   cardGap: number;
   cardGapSupported: boolean;
   labelSize: string;

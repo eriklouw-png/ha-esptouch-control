@@ -104,6 +104,8 @@ export function createWebStyles(dragAnimation: boolean): string {
         ".sp-btn-icon{position:absolute;left:var(--btn-pad);top:var(--btn-pad);" +
         "font-size:var(--btn-icon);line-height:1;color:var(--card-text-color,var(--preview-text-primary));z-index:1}" +
         ".sp-btn>.sp-btn-label,.sp-btn>.sp-btn-label-row{margin-top:auto}" +
+        ".sp-align-center .sp-btn-icon{left:50%;transform:translateX(-50%)}" +
+        ".sp-align-center .sp-btn>.sp-btn-label,.sp-align-center .sp-btn>.sp-btn-label-row{text-align:center;justify-content:center}" +
         ".sp-media-group-active{box-shadow:inset 0 0 0 3px var(--accent)}" +
         ".sp-btn-label{display:block;max-height:var(--btn-label-max-height);overflow:hidden;word-break:break-word;min-height:0}" +
         ".sp-btn.sp-weather-wind-card>.sp-btn-label{max-height:none}" +

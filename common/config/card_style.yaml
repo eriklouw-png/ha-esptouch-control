@@ -8,6 +8,7 @@
 #
 #   Card Spacing  gap between cards in pixels (default: the panel's own gap)
 #   Label Size    Small / Medium / Large card label text
+#   Card Alignment  Left (icon and label at the left) or Centered
 #
 # The device fonts file must define font_text_small, font_text_body and
 # font_text_body_large.
@@ -38,6 +39,27 @@ number:
               - script.execute: refresh_subpage_grid
 
 select:
+  - platform: template
+    name: "${entity_screen_card_alignment}"
+    id: card_alignment_select
+    entity_category: config
+    icon: "mdi:format-align-center"
+    optimistic: true
+    restore_value: true
+    initial_option: "Left"
+    options:
+      - "Left"
+      - "Centered"
+    web_server:
+      sorting_group_id: sg_display
+    on_value:
+      then:
+        - if:
+            condition:
+              lambda: 'return grid_phase2_complete();'
+            then:
+              - script.execute: refresh_subpage_grid
+
   - platform: template
     name: "${entity_screen_label_size}"
     id: label_size_select

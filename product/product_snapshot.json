@@ -11,7 +11,7 @@
   "summary": {
     "deviceProfiles": 12,
     "cardTypes": 44,
-    "entityNames": 115,
+    "entityNames": 116,
     "icons": 500,
     "structuralIcons": 28,
     "compatibilityFixtureGroups": 2
@@ -8393,6 +8393,19 @@
           "screen__card_spacing",
           "screen_card_spacing",
           "card_gap_number"
+        ],
+        "groups": [
+          "settings"
+        ]
+      },
+      {
+        "key": "screen_card_alignment",
+        "domain": "select",
+        "name": "Screen: Card Alignment",
+        "objectIds": [
+          "screen__card_alignment",
+          "screen_card_alignment",
+          "card_alignment_select"
         ],
         "groups": [
           "settings"

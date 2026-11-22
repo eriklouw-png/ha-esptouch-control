@@ -37,7 +37,7 @@ import {
 } from "../model/settings";
 import { syncThemeSettingsUi } from "./theme_settings_ui";
 import { syncCardCurveUi, syncCardStyleExtrasUi } from "./card_curve_ui";
-import { normalizeCardCurve, normalizeCardGap, normalizeLabelSize } from "../model/settings";
+import { normalizeCardAlignment, normalizeCardCurve, normalizeCardGap, normalizeLabelSize } from "../model/settings";
 import type { UiRuntimeState } from "./state";
 import type { CoreFeature } from "./core";
 import { languageOptionsWithFallback, syncLanguageSelect } from "./language_state";
@@ -449,6 +449,11 @@ export function createAppStateEventHandlersFeature(
                 syncCardCurveUi(state, runtime);
                 syncPreviewOrientation(true);
                 renderPreview();
+            },
+            "select-screen__card_alignment": function (this: any, val?: any, d?: any) {
+                state.cardAlignment = normalizeCardAlignment(d.value || val);
+                state.cardAlignmentSupported = true;
+                syncCardStyleExtrasUi(state, runtime);
             },
             "number-screen__card_spacing": function (this: any, val?: any, d?: any) {
                 state.cardGap = normalizeCardGap(d && d.value !== undefined ? d.value : val);

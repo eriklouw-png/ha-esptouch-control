@@ -14,7 +14,7 @@ import {
 } from "../model/settings";
 import { syncThemeSettingsUi } from "./theme_settings_ui";
 import { syncCardCurveUi, syncCardStyleExtrasUi } from "./card_curve_ui";
-import { normalizeCardCurve, normalizeCardGap, normalizeLabelSize } from "../model/settings";
+import { normalizeCardAlignment, normalizeCardCurve, normalizeCardGap, normalizeLabelSize } from "../model/settings";
 import type { ConfigCodecFeature } from "./config_codec";
 import type { UiRuntimeState } from "./state";
 import type { CoreFeature } from "./core";
@@ -118,6 +118,17 @@ export function createSettingsPageFeature(codec: Pick<ConfigCodecFeature, "bindT
         const cardStyleExtras: any = document.createElement("div");
         cardStyleExtras.id = "sp-set-card-style-extras";
         cardStyleExtras.hidden = true;
+        const cardAlignment = segmentControl([["Left", "Left aligned"], ["Centered", "Centered"]], normalizeCardAlignment(state.cardAlignment), (value: string) => {
+            state.cardAlignment = normalizeCardAlignment(value);
+            syncCardStyleExtrasUi(state, runtime);
+            postSelect(entityName("screen_card_alignment"), state.cardAlignment);
+        });
+        cardAlignment.segment.id = "sp-set-card-alignment";
+        cardAlignment.segment.setAttribute("role", "group");
+        cardAlignment.segment.setAttribute("aria-label", "Card alignment");
+        cardStyleExtras.appendChild(fieldLabel("Card alignment"));
+        cardStyleExtras.appendChild(cardAlignment.segment);
+        els.setCardAlignmentButtons = cardAlignment.buttons;
         const labelSize = segmentControl(["Small", "Medium", "Large"], normalizeLabelSize(state.labelSize), (value: string) => {
             state.labelSize = normalizeLabelSize(value);
             syncCardStyleExtrasUi(state, runtime);

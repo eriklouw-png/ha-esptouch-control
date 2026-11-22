@@ -56,6 +56,10 @@ export function normalizeLabelSize(value: unknown): string {
   return size === "small" ? "Small" : size === "large" ? "Large" : "Medium";
 }
 
+export function normalizeCardAlignment(value: unknown): string {
+  return String(value || "").trim().toLowerCase() === "Centered".toLowerCase() ? "Centered" : "Left";
+}
+
 export function normalizeCardGap(value: unknown): number {
   const gap = Math.round(Number(value));
   return Number.isFinite(gap) ? Math.max(0, Math.min(24, gap)) : 8;
