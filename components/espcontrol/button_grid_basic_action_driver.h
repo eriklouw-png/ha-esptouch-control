@@ -70,10 +70,39 @@ inline bool basic_action_driver_attach_interaction(
   return basic_action_driver_matches(context, config);
 }
 
+// Wide action card with a state entity and "look per state": the card keeps its own icon
+// (top left) and title (bottom left); the current state shows on the right as an icon (top)
+// and a text (bottom).
+inline void basic_action_driver_build_status_layout(BtnSlot &slot, const ParsedCfg &config) {
+  if (!slot.btn || !slot.icon_lbl || !slot.text_lbl) return;
+  lv_obj_t *status_icon = lv_label_create(slot.btn);
+  lv_obj_t *status_text = lv_label_create(slot.btn);
+  lv_obj_set_style_text_font(status_icon, lv_obj_get_style_text_font(slot.icon_lbl, LV_PART_MAIN), LV_PART_MAIN);
+  lv_obj_set_style_text_font(status_text, lv_obj_get_style_text_font(slot.text_lbl, LV_PART_MAIN), LV_PART_MAIN);
+  lv_label_set_text(status_icon, "");
+  lv_label_set_text(status_text, "");
+  lv_obj_set_user_data(slot.icon_lbl, nullptr);
+  lv_obj_align(slot.icon_lbl, LV_ALIGN_TOP_LEFT, 0, 0);
+  lv_obj_align(slot.text_lbl, LV_ALIGN_BOTTOM_LEFT, 0, 0);
+  lv_obj_set_style_text_align(slot.text_lbl, LV_TEXT_ALIGN_LEFT, LV_PART_MAIN);
+  lv_obj_align(status_icon, LV_ALIGN_TOP_RIGHT, 0, 0);
+  lv_obj_align(status_text, LV_ALIGN_BOTTOM_RIGHT, 0, 0);
+  lv_obj_clear_flag(status_icon, LV_OBJ_FLAG_CLICKABLE);
+  lv_obj_clear_flag(status_text, LV_OBJ_FLAG_CLICKABLE);
+  slot.status_icon_lbl = status_icon;
+  slot.status_text_lbl = status_text;
+  (void) config;
+}
+
 inline bool basic_action_driver_refresh_layout(
-    BtnSlot &, const ParsedCfg &config, const Context &context,
-    const DisplayProfile &, int, int) {
-  return basic_action_driver_matches(context, config);
+    BtnSlot &slot, const ParsedCfg &config, const Context &context,
+    const DisplayProfile &, int row_span, int col_span) {
+  if (!basic_action_driver_matches(context, config)) return false;
+  if (col_span >= 2 && row_span == 1 && action_card_state_text_mode(config) &&
+      !action_card_state_look(config).empty()) {
+    basic_action_driver_build_status_layout(slot, config);
+  }
+  return true;
 }
 
 inline bool basic_action_driver_cleanup(

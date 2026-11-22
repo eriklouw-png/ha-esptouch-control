@@ -361,6 +361,8 @@ inline bool card_slot_static_child(const BtnSlot &s, lv_obj_t *child) {
 
 inline void reset_card_slot_dynamic_children(BtnSlot &s) {
   if (!s.btn) return;
+  s.status_icon_lbl = nullptr;  // deleted below with the other dynamic children
+  s.status_text_lbl = nullptr;
   slider_bind_text_contrast(s.icon_lbl, nullptr);
   slider_bind_text_contrast(s.text_lbl, nullptr);
   slider_bind_text_contrast(s.sensor_container, nullptr);

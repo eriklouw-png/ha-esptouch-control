@@ -529,6 +529,8 @@ struct ActionCardStateCtx {
   lv_obj_t *text_lbl = nullptr;
   lv_obj_t *sensor_lbl = nullptr;
   lv_obj_t *unit_lbl = nullptr;
+  lv_obj_t *status_icon_lbl = nullptr;
+  lv_obj_t *status_text_lbl = nullptr;
   bool show_icon_state = false;
   bool show_text_state = false;
   bool show_numeric_state = false;
@@ -547,6 +549,8 @@ inline ActionCardStateCtx *create_action_card_state_context(const BtnSlot &s,
   ctx->text_lbl = s.text_lbl;
   ctx->sensor_lbl = s.sensor_lbl;
   ctx->unit_lbl = s.unit_lbl;
+  ctx->status_icon_lbl = s.status_icon_lbl;
+  ctx->status_text_lbl = s.status_text_lbl;
   ctx->show_icon_state = action_card_state_icon_mode(p);
   ctx->show_text_state = action_card_state_text_mode(p);
   ctx->show_numeric_state = action_card_state_numeric_mode(p);
@@ -567,13 +571,18 @@ inline void apply_action_card_display_value(ActionCardStateCtx *ctx,
     const std::string current(state.c_str(), state.size());
     for (const ActionCardLook &look : ctx->looks) {
       if (!action_card_look_same_state(current, look.state)) continue;
-      if (look.icon != nullptr && ctx->icon_lbl) lv_label_set_display_text(ctx->icon_lbl, look.icon);
+      lv_obj_t *look_icon = ctx->status_icon_lbl ? ctx->status_icon_lbl : ctx->icon_lbl;
+      if (look.icon != nullptr && look_icon) lv_label_set_display_text(look_icon, look.icon);
       if (look.has_color && ctx->btn) apply_button_colors(ctx->btn, true, look.color, true, look.color);
       break;
     }
   }
   if (ctx->show_icon_state && ctx->icon_lbl) {
     lv_label_set_display_text(ctx->icon_lbl, (!unavailable && is_entity_on_ref(state)) ? ctx->icon_on : ctx->icon_off);
+    return;
+  }
+  if (ctx->show_text_state && ctx->status_text_lbl) {
+    lv_label_set_display_text(ctx->status_text_lbl, text_sensor_display_text(state, HA_STATE_TEXT_MAX_LEN).c_str());
     return;
   }
   if (ctx->show_text_state && ctx->text_lbl) {
