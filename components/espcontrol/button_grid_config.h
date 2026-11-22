@@ -56,8 +56,6 @@ struct BtnSlot {
   lv_obj_t *sensor_lbl;             // numeric sensor value
   lv_obj_t *unit_lbl;               // unit suffix (°C, %, etc.)
   lv_obj_t *subpage_lbl = nullptr;  // small chevron marker for subpage cards
-  lv_obj_t *status_icon_lbl = nullptr;  // wide status cards: icon of the current state (top right)
-  lv_obj_t *status_text_lbl = nullptr;  // wide status cards: text of the current state (bottom right)
 };
 
 struct ParsedCfg;

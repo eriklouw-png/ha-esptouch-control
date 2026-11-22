@@ -549,8 +549,6 @@ inline ActionCardStateCtx *create_action_card_state_context(const BtnSlot &s,
   ctx->text_lbl = s.text_lbl;
   ctx->sensor_lbl = s.sensor_lbl;
   ctx->unit_lbl = s.unit_lbl;
-  ctx->status_icon_lbl = s.status_icon_lbl;
-  ctx->status_text_lbl = s.status_text_lbl;
   ctx->show_icon_state = action_card_state_icon_mode(p);
   ctx->show_text_state = action_card_state_text_mode(p);
   ctx->show_numeric_state = action_card_state_numeric_mode(p);
@@ -563,10 +561,59 @@ inline ActionCardStateCtx *create_action_card_state_context(const BtnSlot &s,
   return ctx;
 }
 
+// Wide action card with a state entity and "look per state": the card keeps its own icon
+// (top left) and title (bottom left); the current state shows on the right as an icon (top)
+// and a text (bottom). Decided from the real card size, so it works for any layout.
+inline void *action_card_status_icon_marker() { static char m; return &m; }
+inline void *action_card_status_text_marker() { static char m; return &m; }
+
+inline lv_obj_t *action_card_find_status_label(lv_obj_t *btn, void *marker) {
+  if (!btn) return nullptr;
+  const int32_t count = static_cast<int32_t>(lv_obj_get_child_cnt(btn));
+  for (int32_t i = 0; i < count; i++) {
+    lv_obj_t *child = lv_obj_get_child(btn, i);
+    if (child && lv_obj_get_user_data(child) == marker) return child;
+  }
+  return nullptr;
+}
+
+inline bool action_card_status_layout(ActionCardStateCtx *ctx) {
+  if (!ctx || !ctx->btn || !ctx->icon_lbl || !ctx->text_lbl) return false;
+  if (!ctx->show_text_state || ctx->looks.empty()) return false;
+  lv_obj_t *icon = action_card_find_status_label(ctx->btn, action_card_status_icon_marker());
+  lv_obj_t *text = action_card_find_status_label(ctx->btn, action_card_status_text_marker());
+  if (!icon || !text) {
+    lv_obj_update_layout(ctx->btn);
+    const int w = lv_obj_get_width(ctx->btn);
+    const int h = lv_obj_get_height(ctx->btn);
+    if (h <= 0 || w * 10 < h * 16) return false;  // only for wide cards
+    icon = lv_label_create(ctx->btn);
+    text = lv_label_create(ctx->btn);
+    lv_obj_set_user_data(icon, action_card_status_icon_marker());
+    lv_obj_set_user_data(text, action_card_status_text_marker());
+    lv_obj_set_style_text_font(icon, lv_obj_get_style_text_font(ctx->icon_lbl, LV_PART_MAIN), LV_PART_MAIN);
+    lv_obj_set_style_text_font(text, lv_obj_get_style_text_font(ctx->text_lbl, LV_PART_MAIN), LV_PART_MAIN);
+    lv_label_set_text(icon, "");
+    lv_label_set_text(text, "");
+    lv_obj_set_user_data(ctx->icon_lbl, nullptr);
+    lv_obj_align(ctx->icon_lbl, LV_ALIGN_TOP_LEFT, 0, 0);
+    lv_obj_align(ctx->text_lbl, LV_ALIGN_BOTTOM_LEFT, 0, 0);
+    lv_obj_set_style_text_align(ctx->text_lbl, LV_TEXT_ALIGN_LEFT, LV_PART_MAIN);
+    lv_obj_align(icon, LV_ALIGN_TOP_RIGHT, 0, 0);
+    lv_obj_align(text, LV_ALIGN_BOTTOM_RIGHT, 0, 0);
+    lv_obj_clear_flag(icon, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_clear_flag(text, LV_OBJ_FLAG_CLICKABLE);
+  }
+  ctx->status_icon_lbl = icon;
+  ctx->status_text_lbl = text;
+  return true;
+}
+
 inline void apply_action_card_display_value(ActionCardStateCtx *ctx,
                                             esphome::StringRef state,
                                             bool unavailable) {
   if (!ctx) return;
+  action_card_status_layout(ctx);
   if (!ctx->looks.empty() && !unavailable) {
     const std::string current(state.c_str(), state.size());
     for (const ActionCardLook &look : ctx->looks) {
