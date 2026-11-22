@@ -494,7 +494,7 @@ inline std::vector<ActionCardLook> parse_action_card_looks(const std::string &sp
     if (end == std::string::npos) end = spec.size();
     const std::string item = spec.substr(pos, end - pos);
     pos = end + 1;
-    if (action_card_look_trim(item).empty()) continue;
+    if (action_card_look_trim(item).empty() || action_card_look_trim(item)[0] == '@') continue;
     std::string parts[3];
     size_t part = 0, start = 0;
     for (size_t i = 0; i <= item.size() && part < 3; ++i) {
@@ -522,6 +522,23 @@ inline std::vector<ActionCardLook> parse_action_card_looks(const std::string &sp
   return looks;
 }
 
+// "@entity" or "@entity:unit" inside Look Per State: the left half of a wide status card shows
+// the state of this entity (a number in a big font, anything else as small text).
+inline void parse_action_card_info(const std::string &spec, std::string &entity, std::string &unit) {
+  size_t pos = 0;
+  while (pos <= spec.size()) {
+    size_t end = spec.find(';', pos);
+    if (end == std::string::npos) end = spec.size();
+    const std::string item = action_card_look_trim(spec.substr(pos, end - pos));
+    pos = end + 1;
+    if (item.size() < 2 || item[0] != '@') continue;
+    const size_t colon = item.find(':');
+    entity = action_card_look_trim(item.substr(1, colon == std::string::npos ? std::string::npos : colon - 1));
+    unit = colon == std::string::npos ? "" : action_card_look_trim(item.substr(colon + 1));
+    return;
+  }
+}
+
 struct ActionCardStateCtx {
   std::vector<ActionCardLook> looks;
   lv_obj_t *btn = nullptr;
@@ -531,6 +548,9 @@ struct ActionCardStateCtx {
   lv_obj_t *unit_lbl = nullptr;
   lv_obj_t *status_icon_lbl = nullptr;
   lv_obj_t *status_text_lbl = nullptr;
+  lv_obj_t *status_value_lbl = nullptr;
+  std::string info_entity;
+  std::string info_unit;
   bool show_icon_state = false;
   bool show_text_state = false;
   bool show_numeric_state = false;
@@ -558,23 +578,43 @@ inline ActionCardStateCtx *create_action_card_state_context(const BtnSlot &s,
   ctx->precision = parse_precision(action_card_state_precision(p));
   ctx->unit = trim_display_unit(action_card_state_unit(p));
   ctx->looks = parse_action_card_looks(action_card_state_look(p));
+  parse_action_card_info(action_card_state_look(p), ctx->info_entity, ctx->info_unit);
   return ctx;
 }
 
-// Wide action card with a state entity and "look per state": the card keeps its own icon
-// (top left) and title (bottom left); the current state shows on the right as an icon (top)
-// and a text (bottom). Decided from the real card size, so it works for any layout.
+// Wide action card with a state entity and "look per state". Left half: title (top) and the
+// value of an optional info entity (below, big for numbers). A thin divider in the middle.
+// Right half, like any other card: icon of the current state on top, its text below.
+// Decided from the real card size, so it works for any layout.
 inline void *action_card_status_icon_marker() { static char m; return &m; }
 inline void *action_card_status_text_marker() { static char m; return &m; }
+inline void *action_card_status_value_marker() { static char m; return &m; }
 
 inline lv_obj_t *action_card_find_status_label(lv_obj_t *btn, void *marker) {
   if (!btn) return nullptr;
   const int32_t count = static_cast<int32_t>(lv_obj_get_child_cnt(btn));
   for (int32_t i = 0; i < count; i++) {
     lv_obj_t *child = lv_obj_get_child(btn, i);
-    if (child && lv_obj_get_user_data(child) == marker) return child;
+    if (!child) continue;
+    if (lv_obj_get_user_data(child) == marker) return child;
+    const int32_t inner = static_cast<int32_t>(lv_obj_get_child_cnt(child));
+    for (int32_t j = 0; j < inner; j++) {
+      lv_obj_t *grand = lv_obj_get_child(child, j);
+      if (grand && lv_obj_get_user_data(grand) == marker) return grand;
+    }
   }
   return nullptr;
+}
+
+inline lv_obj_t *action_card_plain_container(lv_obj_t *parent) {
+  lv_obj_t *box = lv_obj_create(parent);
+  lv_obj_set_style_bg_opa(box, LV_OPA_TRANSP, LV_PART_MAIN);
+  lv_obj_set_style_border_width(box, 0, LV_PART_MAIN);
+  lv_obj_set_style_pad_all(box, 0, LV_PART_MAIN);
+  lv_obj_set_style_radius(box, 0, LV_PART_MAIN);
+  lv_obj_clear_flag(box, LV_OBJ_FLAG_CLICKABLE);
+  lv_obj_clear_flag(box, LV_OBJ_FLAG_SCROLLABLE);
+  return box;
 }
 
 inline bool action_card_status_layout(ActionCardStateCtx *ctx) {
@@ -582,31 +622,79 @@ inline bool action_card_status_layout(ActionCardStateCtx *ctx) {
   if (!ctx->show_text_state || ctx->looks.empty()) return false;
   lv_obj_t *icon = action_card_find_status_label(ctx->btn, action_card_status_icon_marker());
   lv_obj_t *text = action_card_find_status_label(ctx->btn, action_card_status_text_marker());
-  if (!icon || !text) {
+  lv_obj_t *value = action_card_find_status_label(ctx->btn, action_card_status_value_marker());
+  if (!icon || !text || !value) {
     lv_obj_update_layout(ctx->btn);
     const int w = lv_obj_get_width(ctx->btn);
     const int h = lv_obj_get_height(ctx->btn);
     if (h <= 0 || w * 10 < h * 16) return false;  // only for wide cards
-    icon = lv_label_create(ctx->btn);
-    text = lv_label_create(ctx->btn);
+    const lv_font_t *icon_font = lv_obj_get_style_text_font(ctx->icon_lbl, LV_PART_MAIN);
+    const lv_font_t *text_font = lv_obj_get_style_text_font(ctx->text_lbl, LV_PART_MAIN);
+    // Left half: title and value.
+    lv_obj_add_flag(ctx->icon_lbl, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_set_user_data(ctx->icon_lbl, nullptr);
+    lv_label_set_long_mode(ctx->text_lbl, LV_LABEL_LONG_DOT);
+    lv_obj_set_width(ctx->text_lbl, lv_pct(46));
+    lv_obj_align(ctx->text_lbl, LV_ALIGN_TOP_LEFT, 0, 0);
+    lv_obj_set_style_text_align(ctx->text_lbl, LV_TEXT_ALIGN_LEFT, LV_PART_MAIN);
+    value = lv_label_create(ctx->btn);
+    lv_obj_set_user_data(value, action_card_status_value_marker());
+    lv_label_set_long_mode(value, LV_LABEL_LONG_DOT);
+    lv_obj_set_width(value, lv_pct(46));
+    lv_obj_set_style_text_font(value, text_font, LV_PART_MAIN);
+    lv_label_set_text(value, "");
+    lv_obj_align(value, LV_ALIGN_BOTTOM_LEFT, 0, 0);
+    lv_obj_clear_flag(value, LV_OBJ_FLAG_CLICKABLE);
+    // Divider in the middle.
+    lv_obj_t *line = action_card_plain_container(ctx->btn);
+    lv_obj_set_size(line, 2, lv_pct(70));
+    lv_obj_set_style_bg_color(line, lv_obj_get_style_text_color(ctx->text_lbl, LV_PART_MAIN), LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(line, LV_OPA_40, LV_PART_MAIN);
+    lv_obj_align(line, LV_ALIGN_CENTER, 0, 0);
+    // Right half, centred like the other cards.
+    lv_obj_t *right = action_card_plain_container(ctx->btn);
+    lv_obj_set_size(right, lv_pct(50), lv_pct(100));
+    lv_obj_align(right, LV_ALIGN_TOP_RIGHT, 0, 0);
+    icon = lv_label_create(right);
+    text = lv_label_create(right);
     lv_obj_set_user_data(icon, action_card_status_icon_marker());
     lv_obj_set_user_data(text, action_card_status_text_marker());
-    lv_obj_set_style_text_font(icon, lv_obj_get_style_text_font(ctx->icon_lbl, LV_PART_MAIN), LV_PART_MAIN);
-    lv_obj_set_style_text_font(text, lv_obj_get_style_text_font(ctx->text_lbl, LV_PART_MAIN), LV_PART_MAIN);
+    lv_obj_set_style_text_font(icon, icon_font, LV_PART_MAIN);
+    lv_obj_set_style_text_font(text, text_font, LV_PART_MAIN);
     lv_label_set_text(icon, "");
     lv_label_set_text(text, "");
-    lv_obj_set_user_data(ctx->icon_lbl, nullptr);
-    lv_obj_align(ctx->icon_lbl, LV_ALIGN_TOP_LEFT, 0, 0);
-    lv_obj_align(ctx->text_lbl, LV_ALIGN_BOTTOM_LEFT, 0, 0);
-    lv_obj_set_style_text_align(ctx->text_lbl, LV_TEXT_ALIGN_LEFT, LV_PART_MAIN);
-    lv_obj_align(icon, LV_ALIGN_TOP_RIGHT, 0, 0);
-    lv_obj_align(text, LV_ALIGN_BOTTOM_RIGHT, 0, 0);
+    lv_label_set_long_mode(text, LV_LABEL_LONG_DOT);
+    lv_obj_set_width(text, lv_pct(100));
+    lv_obj_set_style_text_align(text, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
+    lv_obj_align(icon, LV_ALIGN_TOP_MID, 0, lv_font_get_line_height(icon_font) / 5);
+    lv_obj_align(text, LV_ALIGN_BOTTOM_MID, 0, 0);
     lv_obj_clear_flag(icon, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_clear_flag(text, LV_OBJ_FLAG_CLICKABLE);
   }
   ctx->status_icon_lbl = icon;
   ctx->status_text_lbl = text;
+  ctx->status_value_lbl = value;
   return true;
+}
+
+// Value of the info entity in the left half: a number in the big font, anything else small.
+inline void apply_action_card_info_value(ActionCardStateCtx *ctx, esphome::StringRef state, bool unavailable) {
+  if (!ctx || ctx->info_entity.empty() || !action_card_status_layout(ctx) || !ctx->status_value_lbl) return;
+  float val = 0.0f;
+  if (!unavailable && parse_float_ref(state, val) && std::isfinite(val)) {
+    char buf[24];
+    format_fixed_decimal(buf, sizeof(buf), val, 1);
+    std::string out(buf);
+    out += ctx->info_unit;
+    const lv_font_t *big = ctx->sensor_lbl ? lv_obj_get_style_text_font(ctx->sensor_lbl, LV_PART_MAIN) : nullptr;
+    if (big) lv_obj_set_style_text_font(ctx->status_value_lbl, big, LV_PART_MAIN);
+    lv_label_set_display_text(ctx->status_value_lbl, out.c_str());
+  } else {
+    std::string out = unavailable ? std::string("--") : text_sensor_display_text(state, HA_STATE_TEXT_MAX_LEN);
+    if (!out.empty() && out[0] >= 'a' && out[0] <= 'z') out[0] = static_cast<char>(out[0] - 'a' + 'A');
+    lv_obj_set_style_text_font(ctx->status_value_lbl, lv_obj_get_style_text_font(ctx->text_lbl, LV_PART_MAIN), LV_PART_MAIN);
+    lv_label_set_display_text(ctx->status_value_lbl, out.c_str());
+  }
 }
 
 inline void apply_action_card_display_value(ActionCardStateCtx *ctx,
@@ -653,6 +741,15 @@ inline void apply_action_card_display_value(ActionCardStateCtx *ctx,
 inline void subscribe_action_card_display_state(ActionCardStateCtx *ctx,
                                                 const std::string &entity_id) {
   if (!ctx || entity_id.empty()) return;
+  if (!ctx->info_entity.empty()) {
+    const std::string info_entity = ctx->info_entity;
+    ha_subscribe_state(
+      info_entity,
+      std::function<void(esphome::StringRef)>([ctx, info_entity](esphome::StringRef state) {
+        apply_action_card_info_value(ctx, state, ha_entity_state_unavailable_ref(info_entity, state));
+      })
+    );
+  }
   ha_subscribe_state(
     entity_id,
     std::function<void(esphome::StringRef)>([ctx, entity_id](esphome::StringRef state) {
