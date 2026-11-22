@@ -25,6 +25,7 @@ import {
     ACTION_CARD_LOCAL_ACTION,
     ACTION_CARD_OPTION_SELECT_ACTION,
     ACTION_CARD_STATE_ENTITY_OPTION,
+    ACTION_CARD_STATE_LOOK_OPTION,
     ACTION_CARD_STATE_PRECISION_OPTION,
     ACTION_CARD_STATE_UNIT_OPTION,
 } from "./config_action_contract";
@@ -340,7 +341,23 @@ export function createConfigConfirmationOptionsFeature(
     function actionScriptFields(this: any, b?: any) {
         return actionCardIsScript(b) ? configOptionValue(b && b.options, ACTION_SCRIPT_FIELDS_OPTION) : "";
     }
+    // "Look per state" (icon and colour per state of the state entity) is kept next to the state entity.
     function copyActionCardStateOptions(this: any, out?: any, options?: any) {
+        var result: any = copyActionCardStateOptionsBase(out, options);
+        var look: any = configOptionValue(options, ACTION_CARD_STATE_LOOK_OPTION).trim();
+        if (look && configOptionValue(options, ACTION_CARD_STATE_ENTITY_OPTION).trim())
+            result = setConfigOptionValue(result, ACTION_CARD_STATE_LOOK_OPTION, look);
+        return result;
+    }
+    function actionCardStateLook(this: any, button?: any) {
+        return configOptionValue(button && button.options, ACTION_CARD_STATE_LOOK_OPTION);
+    }
+    function setActionCardStateLook(this: any, button?: any, value?: any) {
+        if (!button) return "";
+        button.options = setConfigOptionValue(button.options, ACTION_CARD_STATE_LOOK_OPTION, String(value || "").trim());
+        return button.options;
+    }
+    function copyActionCardStateOptionsBase(this: any, out?: any, options?: any) {
         var stateEntity: any = configOptionValue(options, ACTION_CARD_STATE_ENTITY_OPTION).trim();
         if (!stateEntity)
             return out;
@@ -460,6 +477,8 @@ export function createConfigConfirmationOptionsFeature(
         actionScriptConfirmationMessage,
         actionScriptConfirmationYesText,
         actionScriptConfirmationNoText,
+        actionCardStateLook,
+        setActionCardStateLook,
         actionScriptFields,
         copyActionCardStateOptions,
         normalizeActionOptions,

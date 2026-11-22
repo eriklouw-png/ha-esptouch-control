@@ -2678,6 +2678,7 @@ def gen_saved_config_shadow_ts(data):
         "      if (numericPrecision) out.push(\"state_precision=\" + rawPrecision);\n"
         "      if (optionValue(source, \"large_numbers\") === \"off\") out.push(\"large_numbers=off\"); else if (optionPresent(source, \"large_numbers\")) out.push(\"large_numbers\");\n"
         "    }\n"
+        "    const stateLook = optionValue(source, \"state_look\").trim(); if (stateLook) out.push(\"state_look=\" + encodeOptionValue(stateLook));\n"
         "  }\n"
         "  if (config.sensor === \"script.turn_on\") {\n"
         "    const fields = optionValue(source, \"script_fields\").trim(); if (fields) out.push(\"script_fields=\" + encodeOptionValue(fields));\n"
@@ -2857,6 +2858,7 @@ def gen_saved_config_shadow_h(data):
         "      if (numeric_precision) saved_config_shadow_append_option(out, \"state_precision\", raw_precision);\n",
         "      append_large_numbers_option(out, source);\n",
         "    }\n",
+        "    const std::string state_look = saved_config_shadow_trim(cfg_option_value(source, \"state_look\")); if (!state_look.empty()) saved_config_shadow_append_option(out, \"state_look\", state_look);\n",
         "  }\n",
         "  if (config.sensor == \"script.turn_on\") {\n",
         "    const std::string fields = saved_config_shadow_trim(cfg_option_value(source, \"script_fields\"));\n",

@@ -409,6 +409,21 @@ export const CARD_CONTRACT_CARDS: Readonly<Record<string, CardTypeSpec>> = {
         ]
       },
       {
+        "name": "state_look",
+        "label": "Look Per State",
+        "kind": "text",
+        "hidden": true,
+        "docsHidden": true,
+        "omitDefault": true,
+        "applicability": [
+          {
+            "source": "option",
+            "name": "state_entity",
+            "operator": "present"
+          }
+        ]
+      },
+      {
         "name": "confirmation_required",
         "label": "Confirmation Required",
         "kind": "flag",
@@ -542,6 +557,7 @@ export const CARD_CONTRACT_CARDS: Readonly<Record<string, CardTypeSpec>> = {
         "state_entity",
         "state_unit",
         "state_precision",
+        "state_look",
         "large_numbers",
         "script_fields",
         "confirm_on",
@@ -5056,6 +5072,7 @@ export const CARD_CONTRACT_OPTION_NAMES: Readonly<Record<string, string>> = {
   "state_input": "state_input",
   "state_input_2": "state_input_2",
   "state_labels": "state_labels",
+  "state_look": "state_look",
   "state_low_label": "state_low_label",
   "state_output": "state_output",
   "state_output_2": "state_output_2",

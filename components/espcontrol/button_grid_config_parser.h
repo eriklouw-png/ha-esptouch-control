@@ -1088,6 +1088,10 @@ inline std::string action_card_options_normalized(const std::string &options,
       }
       append_large_numbers_option(out, options);
     }
+    std::string state_look = trim_saved_option_value(cfg_option_value(options, "state_look"));
+    if (!state_look.empty()) {
+      append_config_token(out, "state_look=" + encode_compact_field(state_look));
+    }
   }
 
   if (action == "script.turn_on") {
@@ -1461,6 +1465,12 @@ inline std::string action_card_state_entity(const ParsedCfg &p) {
 inline std::string action_card_state_unit(const ParsedCfg &p) {
   if (action_card_local_action(p)) return "";
   return p.type == "action" ? cfg_option_value(p.options, "state_unit") : "";
+}
+
+// "Look Per State": the card's icon and colour change with the state of its state entity.
+// Format: State:Icon:RRGGBB;State:Icon:RRGGBB (icon and colour are optional).
+inline std::string action_card_state_look(const ParsedCfg &p) {
+  return p.type == "action" ? cfg_option_value(p.options, "state_look") : "";
 }
 
 inline std::string action_card_state_precision(const ParsedCfg &p) {

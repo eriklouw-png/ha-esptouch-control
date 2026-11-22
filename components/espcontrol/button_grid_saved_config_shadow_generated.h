@@ -167,6 +167,7 @@ inline bool normalize_saved_config_action_shadow(Config &config) {
       if (numeric_precision) saved_config_shadow_append_option(out, "state_precision", raw_precision);
       append_large_numbers_option(out, source);
     }
+    const std::string state_look = saved_config_shadow_trim(cfg_option_value(source, "state_look")); if (!state_look.empty()) saved_config_shadow_append_option(out, "state_look", state_look);
   }
   if (config.sensor == "script.turn_on") {
     const std::string fields = saved_config_shadow_trim(cfg_option_value(source, "script_fields"));

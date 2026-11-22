@@ -362,6 +362,7 @@ constexpr const char *CARD_CONTRACT_OPTION_NAME_STATE_HIGH_LABEL = "state_high_l
 constexpr const char *CARD_CONTRACT_OPTION_NAME_STATE_INPUT = "state_input";
 constexpr const char *CARD_CONTRACT_OPTION_NAME_STATE_INPUT_2 = "state_input_2";
 constexpr const char *CARD_CONTRACT_OPTION_NAME_STATE_LABELS = "state_labels";
+constexpr const char *CARD_CONTRACT_OPTION_NAME_STATE_LOOK = "state_look";
 constexpr const char *CARD_CONTRACT_OPTION_NAME_STATE_LOW_LABEL = "state_low_label";
 constexpr const char *CARD_CONTRACT_OPTION_NAME_STATE_OUTPUT = "state_output";
 constexpr const char *CARD_CONTRACT_OPTION_NAME_STATE_OUTPUT_2 = "state_output_2";

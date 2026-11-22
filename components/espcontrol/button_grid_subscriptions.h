@@ -459,7 +459,71 @@ inline void subscribe_toggle_state(lv_obj_t *btn_ptr, lv_obj_t *icon_lbl,
   );
 }
 
+// One entry of "Look Per State": how the card looks while its state entity has this state.
+struct ActionCardLook {
+  std::string state;
+  const char *icon = nullptr;
+  bool has_color = false;
+  uint32_t color = 0;
+};
+
+inline std::string action_card_look_trim(const std::string &text) {
+  size_t begin = 0, end = text.size();
+  while (begin < end && (text[begin] == ' ' || text[begin] == '\t')) ++begin;
+  while (end > begin && (text[end - 1] == ' ' || text[end - 1] == '\t')) --end;
+  return text.substr(begin, end - begin);
+}
+
+inline bool action_card_look_same_state(const std::string &a, const std::string &b) {
+  if (a.size() != b.size()) return false;
+  for (size_t i = 0; i < a.size(); ++i) {
+    char x = a[i], y = b[i];
+    if (x >= 'A' && x <= 'Z') x = static_cast<char>(x - 'A' + 'a');
+    if (y >= 'A' && y <= 'Z') y = static_cast<char>(y - 'A' + 'a');
+    if (x != y) return false;
+  }
+  return true;
+}
+
+// Parses "State:Icon:RRGGBB;State:Icon:RRGGBB"; icon and colour are optional.
+inline std::vector<ActionCardLook> parse_action_card_looks(const std::string &spec) {
+  std::vector<ActionCardLook> looks;
+  size_t pos = 0;
+  while (pos <= spec.size()) {
+    size_t end = spec.find(';', pos);
+    if (end == std::string::npos) end = spec.size();
+    const std::string item = spec.substr(pos, end - pos);
+    pos = end + 1;
+    if (action_card_look_trim(item).empty()) continue;
+    std::string parts[3];
+    size_t part = 0, start = 0;
+    for (size_t i = 0; i <= item.size() && part < 3; ++i) {
+      if (i == item.size() || (item[i] == ':' && part < 2)) {
+        parts[part++] = action_card_look_trim(item.substr(start, i - start));
+        start = i + 1;
+      }
+    }
+    ActionCardLook look;
+    look.state = parts[0];
+    if (look.state.empty()) continue;
+    if (!parts[1].empty() && parts[1] != "Auto") look.icon = find_icon(parts[1].c_str());
+    std::string hex = parts[2];
+    if (!hex.empty() && hex[0] == '#') hex.erase(0, 1);
+    if (hex.size() == 6) {
+      char *tail = nullptr;
+      const unsigned long value = std::strtoul(hex.c_str(), &tail, 16);
+      if (tail != nullptr && *tail == '\0') {
+        look.has_color = true;
+        look.color = static_cast<uint32_t>(value);
+      }
+    }
+    looks.push_back(look);
+  }
+  return looks;
+}
+
 struct ActionCardStateCtx {
+  std::vector<ActionCardLook> looks;
   lv_obj_t *btn = nullptr;
   lv_obj_t *icon_lbl = nullptr;
   lv_obj_t *text_lbl = nullptr;
@@ -491,6 +555,7 @@ inline ActionCardStateCtx *create_action_card_state_context(const BtnSlot &s,
   ctx->icon_on = ctx->has_icon_on ? find_icon(p.icon_on.c_str()) : ctx->icon_off;
   ctx->precision = parse_precision(action_card_state_precision(p));
   ctx->unit = trim_display_unit(action_card_state_unit(p));
+  ctx->looks = parse_action_card_looks(action_card_state_look(p));
   return ctx;
 }
 
@@ -498,6 +563,15 @@ inline void apply_action_card_display_value(ActionCardStateCtx *ctx,
                                             esphome::StringRef state,
                                             bool unavailable) {
   if (!ctx) return;
+  if (!ctx->looks.empty() && !unavailable) {
+    const std::string current(state.c_str(), state.size());
+    for (const ActionCardLook &look : ctx->looks) {
+      if (!action_card_look_same_state(current, look.state)) continue;
+      if (look.icon != nullptr && ctx->icon_lbl) lv_label_set_display_text(ctx->icon_lbl, look.icon);
+      if (look.has_color && ctx->btn) apply_button_colors(ctx->btn, true, look.color, true, look.color);
+      break;
+    }
+  }
   if (ctx->show_icon_state && ctx->icon_lbl) {
     lv_label_set_display_text(ctx->icon_lbl, (!unavailable && is_entity_on_ref(state)) ? ctx->icon_on : ctx->icon_off);
     return;

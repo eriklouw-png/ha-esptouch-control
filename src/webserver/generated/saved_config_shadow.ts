@@ -49,6 +49,7 @@ export const SAVED_CONFIG_SHADOW_PILOT_POLICIES: Readonly<Record<string, CardNor
       "state_entity",
       "state_unit",
       "state_precision",
+      "state_look",
       "large_numbers",
       "script_fields",
       "confirm_on",
@@ -416,6 +417,7 @@ export function normalizeSavedConfigActionShadow(input: Partial<CardConfig>): Ca
       if (numericPrecision) out.push("state_precision=" + rawPrecision);
       if (optionValue(source, "large_numbers") === "off") out.push("large_numbers=off"); else if (optionPresent(source, "large_numbers")) out.push("large_numbers");
     }
+    const stateLook = optionValue(source, "state_look").trim(); if (stateLook) out.push("state_look=" + encodeOptionValue(stateLook));
   }
   if (config.sensor === "script.turn_on") {
     const fields = optionValue(source, "script_fields").trim(); if (fields) out.push("script_fields=" + encodeOptionValue(fields));
