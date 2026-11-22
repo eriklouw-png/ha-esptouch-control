@@ -1,13 +1,13 @@
 {
   "name": "EspControl guition-esp32-s3-4848s040-4x4",
-  "version": "v1.0.13",
+  "version": "v1.0.14",
   "builds": [
     {
       "chipFamily": "ESP32-S3",
       "ota": {
         "path": "guition-esp32-s3-4848s040-4x4.ota.bin",
-        "md5": "9cf0328eadb395571bce8b1256319c9b",
-        "summary": "EspControl v1.0.13",
+        "md5": "2587fe790f318b05a406850e03de4317",
+        "summary": "EspControl v1.0.14",
         "release_url": "https://github.com/eriklouw-png/ha-esptouch-control"
       }
     }
