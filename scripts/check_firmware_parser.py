@@ -191,6 +191,13 @@ inline int lv_obj_get_style_pad_column(lv_obj_t *, int) { return 0; }
 inline int lv_obj_get_style_pad_row(lv_obj_t *, int) { return 0; }
 inline lv_obj_t *lv_obj_get_parent(lv_obj_t *obj) { return obj->parent; }
 inline void *lv_obj_get_user_data(lv_obj_t *obj) { return obj ? obj->user_data : nullptr; }
+struct lv_font_glyph_dsc_t { uint32_t adv_w = 0; int32_t ofs_x = 0; uint32_t box_w = 0; };
+inline bool lv_font_get_glyph_dsc(const lv_font_t *, lv_font_glyph_dsc_t *glyph, uint32_t, uint32_t) {
+  glyph->adv_w = 0;
+  glyph->box_w = 0;
+  return false;
+}
+inline void lv_obj_set_x(lv_obj_t *, int) {}
 inline lv_disp_t *lv_disp_get_default() { return lv_test_disp_available ? &lv_test_default_disp : nullptr; }
 inline int lv_disp_get_hor_res(lv_disp_t *) { return lv_test_hor_res; }
 inline int lv_disp_get_ver_res(lv_disp_t *) { return lv_test_ver_res; }
