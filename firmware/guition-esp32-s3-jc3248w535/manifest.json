@@ -1,13 +1,13 @@
 {
   "name": "EspControl guition-esp32-s3-jc3248w535",
-  "version": "v1.0.11",
+  "version": "v1.0.12",
   "builds": [
     {
       "chipFamily": "ESP32-S3",
       "ota": {
         "path": "guition-esp32-s3-jc3248w535.ota.bin",
-        "md5": "ea2467efdf63f0775eddca230c9838a4",
-        "summary": "EspControl v1.0.11",
+        "md5": "1375752acf5ba321063121d0a8447a81",
+        "summary": "EspControl v1.0.12",
         "release_url": "https://github.com/eriklouw-png/ha-esptouch-control"
       }
     }
