@@ -582,26 +582,19 @@ inline ActionCardStateCtx *create_action_card_state_context(const BtnSlot &s,
   return ctx;
 }
 
-// Wide action card with a state entity and "look per state". Left half: title (top) and the
-// value of an optional info entity (below, big for numbers). A thin divider in the middle.
-// Right half, like any other card: icon of the current state on top, its text below.
-// Decided from the real card size, so it works for any layout.
-inline void *action_card_status_icon_marker() { static char m; return &m; }
-inline void *action_card_status_text_marker() { static char m; return &m; }
+// Wide action card with a state entity and "look per state". Left half: title and the value
+// of an optional info entity right under it (big for numbers), stacked tightly and centred.
+// A thin divider in the middle. Right half, like any other card: icon of the current state on
+// top, its text below, centred. Decided from the real card size, so it works for any layout.
+inline void *action_card_status_container_marker() { static char m; return &m; }
 inline void *action_card_status_value_marker() { static char m; return &m; }
 
-inline lv_obj_t *action_card_find_status_label(lv_obj_t *btn, void *marker) {
+inline lv_obj_t *action_card_find_marked_child(lv_obj_t *btn, void *marker) {
   if (!btn) return nullptr;
   const int32_t count = static_cast<int32_t>(lv_obj_get_child_cnt(btn));
   for (int32_t i = 0; i < count; i++) {
     lv_obj_t *child = lv_obj_get_child(btn, i);
-    if (!child) continue;
-    if (lv_obj_get_user_data(child) == marker) return child;
-    const int32_t inner = static_cast<int32_t>(lv_obj_get_child_cnt(child));
-    for (int32_t j = 0; j < inner; j++) {
-      lv_obj_t *grand = lv_obj_get_child(child, j);
-      if (grand && lv_obj_get_user_data(grand) == marker) return grand;
-    }
+    if (child && lv_obj_get_user_data(child) == marker) return child;
   }
   return nullptr;
 }
@@ -617,33 +610,48 @@ inline lv_obj_t *action_card_plain_container(lv_obj_t *parent) {
   return box;
 }
 
+// Title and value as one tight block, centred in the left half of the card.
+inline void action_card_status_arrange(ActionCardStateCtx *ctx) {
+  if (!ctx || !ctx->btn || !ctx->text_lbl || !ctx->status_value_lbl) return;
+  lv_obj_update_layout(ctx->btn);
+  const int w = lv_obj_get_width(ctx->btn);
+  const int half = w / 2 - 12;
+  lv_obj_t *title = ctx->text_lbl;
+  lv_obj_t *value = ctx->status_value_lbl;
+  lv_label_set_long_mode(title, LV_LABEL_LONG_DOT);
+  lv_obj_set_width(title, half);
+  lv_obj_set_style_text_align(title, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
+  lv_obj_set_width(value, half);
+  lv_obj_set_style_text_align(value, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
+  lv_obj_update_layout(ctx->btn);
+  const int h1 = lv_obj_get_height(title);
+  const bool has_value = !ctx->info_entity.empty();
+  const int h2 = has_value ? lv_obj_get_height(value) : 0;
+  const int gap = has_value ? 2 : 0;
+  const int total = h1 + gap + h2;
+  lv_obj_align(title, LV_ALIGN_CENTER, -w / 4, -total / 2 + h1 / 2);
+  if (has_value) lv_obj_align(value, LV_ALIGN_CENTER, -w / 4, total / 2 - h2 / 2);
+  else lv_obj_add_flag(value, LV_OBJ_FLAG_HIDDEN);
+}
+
 inline bool action_card_status_layout(ActionCardStateCtx *ctx) {
   if (!ctx || !ctx->btn || !ctx->icon_lbl || !ctx->text_lbl) return false;
   if (!ctx->show_text_state || ctx->looks.empty()) return false;
-  lv_obj_t *icon = action_card_find_status_label(ctx->btn, action_card_status_icon_marker());
-  lv_obj_t *text = action_card_find_status_label(ctx->btn, action_card_status_text_marker());
-  lv_obj_t *value = action_card_find_status_label(ctx->btn, action_card_status_value_marker());
-  if (!icon || !text || !value) {
+  lv_obj_t *right = action_card_find_marked_child(ctx->btn, action_card_status_container_marker());
+  lv_obj_t *value = action_card_find_marked_child(ctx->btn, action_card_status_value_marker());
+  if (!right || !value) {
     lv_obj_update_layout(ctx->btn);
     const int w = lv_obj_get_width(ctx->btn);
     const int h = lv_obj_get_height(ctx->btn);
     if (h <= 0 || w * 10 < h * 16) return false;  // only for wide cards
     const lv_font_t *icon_font = lv_obj_get_style_text_font(ctx->icon_lbl, LV_PART_MAIN);
     const lv_font_t *text_font = lv_obj_get_style_text_font(ctx->text_lbl, LV_PART_MAIN);
-    // Left half: title and value.
     lv_obj_add_flag(ctx->icon_lbl, LV_OBJ_FLAG_HIDDEN);
     lv_obj_set_user_data(ctx->icon_lbl, nullptr);
-    lv_label_set_long_mode(ctx->text_lbl, LV_LABEL_LONG_DOT);
-    lv_obj_set_width(ctx->text_lbl, lv_pct(46));
-    lv_obj_align(ctx->text_lbl, LV_ALIGN_TOP_LEFT, 0, 0);
-    lv_obj_set_style_text_align(ctx->text_lbl, LV_TEXT_ALIGN_LEFT, LV_PART_MAIN);
     value = lv_label_create(ctx->btn);
     lv_obj_set_user_data(value, action_card_status_value_marker());
-    lv_label_set_long_mode(value, LV_LABEL_LONG_DOT);
-    lv_obj_set_width(value, lv_pct(46));
     lv_obj_set_style_text_font(value, text_font, LV_PART_MAIN);
     lv_label_set_text(value, "");
-    lv_obj_align(value, LV_ALIGN_BOTTOM_LEFT, 0, 0);
     lv_obj_clear_flag(value, LV_OBJ_FLAG_CLICKABLE);
     // Divider in the middle.
     lv_obj_t *line = action_card_plain_container(ctx->btn);
@@ -651,28 +659,31 @@ inline bool action_card_status_layout(ActionCardStateCtx *ctx) {
     lv_obj_set_style_bg_color(line, lv_obj_get_style_text_color(ctx->text_lbl, LV_PART_MAIN), LV_PART_MAIN);
     lv_obj_set_style_bg_opa(line, LV_OPA_40, LV_PART_MAIN);
     lv_obj_align(line, LV_ALIGN_CENTER, 0, 0);
-    // Right half, centred like the other cards.
-    lv_obj_t *right = action_card_plain_container(ctx->btn);
-    lv_obj_set_size(right, lv_pct(50), lv_pct(100));
-    lv_obj_align(right, LV_ALIGN_TOP_RIGHT, 0, 0);
-    icon = lv_label_create(right);
-    text = lv_label_create(right);
-    lv_obj_set_user_data(icon, action_card_status_icon_marker());
-    lv_obj_set_user_data(text, action_card_status_text_marker());
+    // Right half: exactly the right half of the card, its content centred in it.
+    right = action_card_plain_container(ctx->btn);
+    lv_obj_set_user_data(right, action_card_status_container_marker());
+    lv_obj_set_size(right, w / 2, lv_pct(100));
+    lv_obj_align(right, LV_ALIGN_CENTER, w / 4, 0);
+    lv_obj_t *icon = lv_label_create(right);
+    lv_obj_t *text = lv_label_create(right);
     lv_obj_set_style_text_font(icon, icon_font, LV_PART_MAIN);
     lv_obj_set_style_text_font(text, text_font, LV_PART_MAIN);
     lv_label_set_text(icon, "");
     lv_label_set_text(text, "");
     lv_label_set_long_mode(text, LV_LABEL_LONG_DOT);
-    lv_obj_set_width(text, lv_pct(100));
+    lv_obj_set_width(text, w / 2 - 12);
     lv_obj_set_style_text_align(text, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
     lv_obj_align(icon, LV_ALIGN_TOP_MID, 0, lv_font_get_line_height(icon_font) / 5);
     lv_obj_align(text, LV_ALIGN_BOTTOM_MID, 0, 0);
+    // The icon font draws glyphs off-centre: every icon swap re-centres its own glyph.
+    lv_obj_set_user_data(icon, centered_icon_marker());
     lv_obj_clear_flag(icon, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_clear_flag(text, LV_OBJ_FLAG_CLICKABLE);
+    ctx->status_value_lbl = value;
+    action_card_status_arrange(ctx);
   }
-  ctx->status_icon_lbl = icon;
-  ctx->status_text_lbl = text;
+  ctx->status_icon_lbl = lv_obj_get_child(right, 0);
+  ctx->status_text_lbl = lv_obj_get_child(right, 1);
   ctx->status_value_lbl = value;
   return true;
 }
@@ -688,7 +699,7 @@ inline void apply_action_card_info_value(ActionCardStateCtx *ctx, esphome::Strin
     if (big) lv_obj_set_style_text_font(ctx->status_value_lbl, big, LV_PART_MAIN);
     lv_label_set_long_mode(ctx->status_value_lbl, LV_LABEL_LONG_CLIP);
     lv_obj_set_width(ctx->status_value_lbl, LV_SIZE_CONTENT);
-    const int available = lv_obj_get_content_width(ctx->btn) / 2 - 8;
+    const int available = lv_obj_get_width(ctx->btn) / 2 - 12;
     for (int decimals = 1; decimals >= 0; decimals--) {
       char buf[24];
       format_fixed_decimal(buf, sizeof(buf), val, decimals);
@@ -703,9 +714,9 @@ inline void apply_action_card_info_value(ActionCardStateCtx *ctx, esphome::Strin
     if (!out.empty() && out[0] >= 'a' && out[0] <= 'z') out[0] = static_cast<char>(out[0] - 'a' + 'A');
     lv_obj_set_style_text_font(ctx->status_value_lbl, lv_obj_get_style_text_font(ctx->text_lbl, LV_PART_MAIN), LV_PART_MAIN);
     lv_label_set_long_mode(ctx->status_value_lbl, LV_LABEL_LONG_DOT);
-    lv_obj_set_width(ctx->status_value_lbl, lv_pct(46));
     lv_label_set_display_text(ctx->status_value_lbl, out.c_str());
   }
+  action_card_status_arrange(ctx);
 }
 
 inline void apply_action_card_display_value(ActionCardStateCtx *ctx,
