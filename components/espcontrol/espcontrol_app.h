@@ -65,7 +65,7 @@ class EspControlApp : public esphome::Component {
   // Copies the text entities into the native configuration document (the
   // authoritative copy that the setup page reads and that restores the layout
   // at boot). Called a moment after a write, so a batch costs one flash write.
-  bool panel_config_sync();
+  bool panel_config_sync(std::string *report = nullptr);
   void set_panel_config_card_images_storage(bool enabled) {
     panel_config_card_images_storage_ = enabled;
   }

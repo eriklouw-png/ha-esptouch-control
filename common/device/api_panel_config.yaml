@@ -71,12 +71,22 @@ api:
                   success: true
 
     - action: refresh_panel_config
+      supports_response: optional
       then:
-        - lambda: 'id(espcontrol_app)->panel_config_sync();'
+        - lambda: |-
+            std::string report;
+            bool ok = id(espcontrol_app)->panel_config_sync(&report);
+            id(panel_config_sync_report) = std::string(ok ? "ok " : "failed ") + report;
         - script.execute: refresh_button_grid
         - script.wait: refresh_button_grid
+        - api.respond:
+            data: !lambda |-
+              root["sync"] = id(panel_config_sync_report);
 
 globals:
+  - id: panel_config_sync_report
+    type: std::string
+    restore_value: no
   - id: panel_config_write_failed
     type: bool
     restore_value: no

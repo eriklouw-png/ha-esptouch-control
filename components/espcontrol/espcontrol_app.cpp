@@ -3,6 +3,8 @@
 #include "esphome/components/artwork_image/transfer_observer.h"
 
 #include <array>
+#include <cstdio>
+#include <cstring>
 #include <cinttypes>
 #include <new>
 
@@ -91,6 +93,25 @@ class EspControlApp::NativeConfigurationRuntime {
       buttons{};
 };
 
+namespace {
+// True when the stored document was written for this device profile (or does
+// not name one). A document from another build variant is not applied at boot
+// and the setup page refuses to save into it, so it must be rebuilt.
+bool panel_config_profile_matches(const uint8_t *document, size_t size, const char *profile) {
+  if (profile == nullptr) return true;
+  configuration::PanelConfigReader reader(document, size);
+  if (reader.begin() != configuration::PanelConfigStatus::OK) return true;
+  configuration::PanelConfigRecord record;
+  while (reader.next(&record) == configuration::PanelConfigStatus::OK) {
+    if (record.type == configuration::PanelConfigRecordType::DEVICE_PROFILE) {
+      return record.value_size == std::strlen(profile) &&
+             std::memcmp(record.value, profile, record.value_size) == 0;
+    }
+  }
+  return true;
+}
+}  // namespace
+
 EspControlApp::EspControlApp() = default;
 
 EspControlApp::~EspControlApp() = default;
@@ -175,7 +196,7 @@ bool EspControlApp::panel_config_write(uint8_t slot, int part,
   return true;
 }
 
-bool EspControlApp::panel_config_sync() {
+bool EspControlApp::panel_config_sync(std::string *report) {
   NativeConfigurationRuntime *const runtime = native_configuration_runtime_.get();
   configuration::ConfigurationService *const service = core_.configuration_service();
   if (runtime == nullptr || service == nullptr || runtime->boot_buffer == nullptr ||
@@ -186,7 +207,14 @@ bool EspControlApp::panel_config_sync() {
       service->refresh_legacy_shadow(runtime->boot_buffer, runtime->slot_capacity);
   ESP_LOGI(TAG, "Panel configuration sync from text entities: status=%u ok=%d",
            static_cast<unsigned>(result.status), result.ok() ? 1 : 0);
-  return result.ok();
+  if (report != nullptr) {
+    char text[96];
+    std::snprintf(text, sizeof(text), "status=%u store=%u generation=%u size=%u",
+                  static_cast<unsigned>(result.status), static_cast<unsigned>(result.store_status),
+                  static_cast<unsigned>(result.generation), static_cast<unsigned>(result.document_size));
+    *report = text;
+  }
+  return result.ok() || result.status == configuration::ServiceStatus::SYNCED_LEGACY;
 }
 
 bool EspControlApp::native_configuration_requested() const {
@@ -426,8 +454,21 @@ void EspControlApp::initialize_native_configuration() {
     runtime.document_buffer =
         runtime.memory + runtime.slot_capacity * 3;
     runtime.boot_buffer = runtime.memory + runtime.slot_capacity * 4;
-    const configuration::ServiceLoadResult loaded = panel_config_service->load(
+    configuration::ServiceLoadResult loaded = panel_config_service->load(
         runtime.document_buffer, runtime.slot_capacity);
+    if (loaded.ok() && runtime.document_buffer != nullptr &&
+        !panel_config_profile_matches(runtime.document_buffer, loaded.document_size,
+                                      panel_config_device_profile_)) {
+      // The document comes from another build variant (for example the 3x3 firmware
+      // before an update to the 4x4 one). Rebuild it from the current layout.
+      ESP_LOGW(TAG, "Stored panel configuration belongs to another device profile; rebuilding it");
+      const configuration::ServiceLoadResult rebuilt =
+          panel_config_service->refresh_legacy_shadow(runtime.boot_buffer, runtime.slot_capacity);
+      ESP_LOGI(TAG, "Rebuilt panel configuration: status=%u", static_cast<unsigned>(rebuilt.status));
+      if (rebuilt.ok() || rebuilt.status == configuration::ServiceStatus::SYNCED_LEGACY) {
+        loaded = panel_config_service->load(runtime.document_buffer, runtime.slot_capacity);
+      }
+    }
     if (!configuration::panel_config_load_allows_native_endpoints(loaded.status)) {
       ESP_LOGW(TAG,
                "Native configuration initial load failed (%u); keeping legacy configuration endpoints active",
