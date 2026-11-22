@@ -129,7 +129,8 @@ export function createStateLoaderFeature(runtime: UiRuntimeState, layout: Applic
         });
     }
     function refreshFirmwareVersion(this: any): Promise<void> {
-        var pending: any = 13;
+        const hasC6 = !/-s3-/.test(layout.deviceId);
+        var pending: any = hasC6 ? 13 : 7;
         let completeRefresh!: () => void;
         const completed = new Promise<void>(resolve => { completeRefresh = resolve; });
         if (!state.firmwareVersion) {
@@ -179,36 +180,40 @@ export function createStateLoaderFeature(runtime: UiRuntimeState, layout: Applic
             renderFirmwareUpdateStatus();
             syncFirmwareUpdateUi();
         }).then(finishFirmwareVersionRefresh, finishFirmwareVersionRefresh);
-        getJsonFirst(entityDetailPaths("text_sensor", entityLookupNames("esp32_c6_current_firmware")), function (this: any, d?: any) {
-            rememberEntityPostPath(d);
-            setC6FirmwareCurrentVersion(d.state || d.value);
-        }).then(finishFirmwareVersionRefresh, finishFirmwareVersionRefresh);
-        getJsonFirst(entityDetailPaths("text_sensor", entityLookupNames("esp32_c6_latest_firmware")), function (this: any, d?: any) {
-            rememberEntityPostPath(d);
-            setC6FirmwareLatestVersion(d.state || d.value);
-        }).then(finishFirmwareVersionRefresh, finishFirmwareVersionRefresh);
-        getJsonFirst(entityDetailPaths("text_sensor", entityLookupNames("esp32_c6_update_available")), function (this: any, d?: any) {
-            rememberEntityPostPath(d);
-            setC6FirmwareUpdateAvailable(d.state || d.value);
-        }).then(finishFirmwareVersionRefresh, finishFirmwareVersionRefresh);
-        getJsonFirst(entityDetailPaths("button", entityLookupNames("esp32_c6_install_update")), function (this: any, d?: any) {
-            rememberEntityPostPath(d);
-            state.c6FirmwareUpdateControlsSupported = true;
-            state.c6FirmwareInstallControlsSupported = true;
-            syncC6FirmwareUi();
-        }).then(finishFirmwareVersionRefresh, finishFirmwareVersionRefresh);
-        getJsonFirst(entityDetailPaths("button", entityLookupNames("esp32_c6_check_for_update")), function (this: any, d?: any) {
-            rememberEntityPostPath(d);
-            state.c6FirmwareUpdateControlsSupported = true;
-            syncC6FirmwareUi();
-        }).then(finishFirmwareVersionRefresh, finishFirmwareVersionRefresh);
-        getJsonFirst(entityDetailPaths("switch", entityLookupNames("esp32_c6_auto_update")), function (this: any, d?: any) {
-            rememberEntityPostPath(d);
-            state.c6FirmwareUpdateControlsSupported = true;
-            state.c6FirmwareAutoUpdateSupported = true;
-            state.c6FirmwareAutoUpdate = d.value === true || d.state === "ON";
-            syncC6FirmwareUi();
-        }).then(finishFirmwareVersionRefresh, finishFirmwareVersionRefresh);
+        // Only panels with an ESP32-C6 co-processor (the P4 panels) have these entities. S3 panels
+        // skipped here saves six probes, each of which tries several names and gets a 404.
+        if (hasC6) {
+            getJsonFirst(entityDetailPaths("text_sensor", entityLookupNames("esp32_c6_current_firmware")), function (this: any, d?: any) {
+                rememberEntityPostPath(d);
+                setC6FirmwareCurrentVersion(d.state || d.value);
+            }).then(finishFirmwareVersionRefresh, finishFirmwareVersionRefresh);
+            getJsonFirst(entityDetailPaths("text_sensor", entityLookupNames("esp32_c6_latest_firmware")), function (this: any, d?: any) {
+                rememberEntityPostPath(d);
+                setC6FirmwareLatestVersion(d.state || d.value);
+            }).then(finishFirmwareVersionRefresh, finishFirmwareVersionRefresh);
+            getJsonFirst(entityDetailPaths("text_sensor", entityLookupNames("esp32_c6_update_available")), function (this: any, d?: any) {
+                rememberEntityPostPath(d);
+                setC6FirmwareUpdateAvailable(d.state || d.value);
+            }).then(finishFirmwareVersionRefresh, finishFirmwareVersionRefresh);
+            getJsonFirst(entityDetailPaths("button", entityLookupNames("esp32_c6_install_update")), function (this: any, d?: any) {
+                rememberEntityPostPath(d);
+                state.c6FirmwareUpdateControlsSupported = true;
+                state.c6FirmwareInstallControlsSupported = true;
+                syncC6FirmwareUi();
+            }).then(finishFirmwareVersionRefresh, finishFirmwareVersionRefresh);
+            getJsonFirst(entityDetailPaths("button", entityLookupNames("esp32_c6_check_for_update")), function (this: any, d?: any) {
+                rememberEntityPostPath(d);
+                state.c6FirmwareUpdateControlsSupported = true;
+                syncC6FirmwareUi();
+            }).then(finishFirmwareVersionRefresh, finishFirmwareVersionRefresh);
+            getJsonFirst(entityDetailPaths("switch", entityLookupNames("esp32_c6_auto_update")), function (this: any, d?: any) {
+                rememberEntityPostPath(d);
+                state.c6FirmwareUpdateControlsSupported = true;
+                state.c6FirmwareAutoUpdateSupported = true;
+                state.c6FirmwareAutoUpdate = d.value === true || d.state === "ON";
+                syncC6FirmwareUi();
+            }).then(finishFirmwareVersionRefresh, finishFirmwareVersionRefresh);
+        }
         return completed;
     }
     function refreshScreensaverTimeout(this: any) {
