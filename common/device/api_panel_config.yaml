@@ -8,6 +8,7 @@
 #                                       slot 1..N: {slot, button, subpages[]}
 #   set_panel_config(slot, part, value) slot 0: button order; slot 1..N with
 #                                       part -1: card config, part 0..7: subpage
+#   install_update() / update_status()  install a newer firmware / show what the panel sees
 #   refresh_panel_config()              save the batch into the panel's stored configuration
 #                                       and redraw the grid (also done automatically
 #                                       2 seconds after the last write)
@@ -69,6 +70,24 @@ api:
             else:
               - api.respond:
                   success: true
+
+    # Update from Home Assistant: install_update checks for a newer version and installs it
+    # (the "Check for Update" button only checks). update_status reports what the panel sees.
+    - action: install_update
+      then:
+        - script.execute: firmware_install_update
+
+    - action: update_status
+      supports_response: only
+      then:
+        - component.update: firmware_update
+        - delay: 6s
+        - api.respond:
+            data: !lambda |-
+              root["state"] = static_cast<int>(id(firmware_update)->state);
+              root["current"] = id(firmware_update)->update_info.current_version;
+              root["latest"] = id(firmware_update)->update_info.latest_version;
+              root["auto_update"] = id(auto_update_switch).state;
 
     - action: refresh_panel_config
       supports_response: optional
