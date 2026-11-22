@@ -596,6 +596,38 @@ inline void subscribe_media_cover_art(MediaNowPlayingCtx *ctx,
   image_card_schedule_media_artwork_refresh(art);
 }
 
+// Centered cards: the icon font draws a glyph inside a wider advance box and not always in
+// the middle of it, so centering the label box leaves the visible icon off-centre. Return
+// how many pixels to move the label so the drawn part is centred.
+inline int centered_icon_dx(lv_obj_t *label) {
+  if (label == nullptr) return 0;
+  const char *text = lv_label_get_text(label);
+  const lv_font_t *font = lv_obj_get_style_text_font(label, LV_PART_MAIN);
+  if (text == nullptr || text[0] == '\0' || font == nullptr) return 0;
+  const unsigned char *c = reinterpret_cast<const unsigned char *>(text);
+  uint32_t letter = c[0];
+  if (c[0] >= 0xF0 && c[1] != 0 && c[2] != 0 && c[3] != 0) {
+    letter = (static_cast<uint32_t>(c[0] & 0x07) << 18) | (static_cast<uint32_t>(c[1] & 0x3F) << 12) |
+             (static_cast<uint32_t>(c[2] & 0x3F) << 6) | static_cast<uint32_t>(c[3] & 0x3F);
+  } else if (c[0] >= 0xE0 && c[1] != 0 && c[2] != 0) {
+    letter = (static_cast<uint32_t>(c[0] & 0x0F) << 12) | (static_cast<uint32_t>(c[1] & 0x3F) << 6) |
+             static_cast<uint32_t>(c[2] & 0x3F);
+  } else if (c[0] >= 0xC0 && c[1] != 0) {
+    letter = (static_cast<uint32_t>(c[0] & 0x1F) << 6) | static_cast<uint32_t>(c[1] & 0x3F);
+  }
+  lv_font_glyph_dsc_t glyph;
+  if (!lv_font_get_glyph_dsc(font, &glyph, letter, 0) || glyph.box_w == 0) return 0;
+  const int line = lv_font_get_line_height(font);
+  const int dx = static_cast<int>(glyph.adv_w) / 2 - (static_cast<int>(glyph.ofs_x) + static_cast<int>(glyph.box_w) / 2);
+  return std::max(-line, std::min(line, dx));
+}
+
+// Centered cards move the icon a little down, towards the middle of the card.
+inline int centered_icon_dy(lv_obj_t *label) {
+  const lv_font_t *font = label == nullptr ? nullptr : lv_obj_get_style_text_font(label, LV_PART_MAIN);
+  return font == nullptr ? 0 : lv_font_get_line_height(font) / 5;
+}
+
 inline void setup_card_visual(BtnSlot &s, const ParsedCfg &p,
                               const espcontrol::cards::Context &context,
                               const GridConfig &cfg,
@@ -635,8 +667,10 @@ inline void setup_card_visual(BtnSlot &s, const ParsedCfg &p,
   if (s.text_lbl) lv_obj_clear_flag(s.text_lbl, LV_OBJ_FLAG_HIDDEN);
   const bool centered = cfg.card_align_center;
   const lv_align_t top_align = centered ? LV_ALIGN_TOP_MID : LV_ALIGN_TOP_LEFT;
-  if (s.icon_lbl) lv_obj_align(s.icon_lbl, top_align, 0, 0);
-  if (s.sensor_container) lv_obj_align(s.sensor_container, top_align, 0, 0);
+  const int icon_dx = centered ? centered_icon_dx(s.icon_lbl) : 0;
+  const int icon_dy = centered ? centered_icon_dy(s.icon_lbl) : 0;
+  if (s.icon_lbl) lv_obj_align(s.icon_lbl, top_align, icon_dx, icon_dy);
+  if (s.sensor_container) lv_obj_align(s.sensor_container, top_align, 0, icon_dy);
   if (s.text_lbl) {
     lv_obj_align(s.text_lbl, centered ? LV_ALIGN_BOTTOM_MID : LV_ALIGN_BOTTOM_LEFT, 0, 0);
     lv_obj_set_style_text_align(s.text_lbl, centered ? LV_TEXT_ALIGN_CENTER : LV_TEXT_ALIGN_AUTO, LV_PART_MAIN);

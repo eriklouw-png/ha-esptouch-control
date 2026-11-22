@@ -1,3 +1,4 @@
+import { centerPreviewIconsAfterFonts } from "./preview_icon_centering";
 import { state } from "../state/app_instance";
 import { cardContractCard } from "../generated/card_contract";
 import { WEB_UI_COLORS } from "../state/ui_tokens";
@@ -279,6 +280,7 @@ export function createPreviewRenderFeature(dependencies: PreviewRenderDependenci
                 editor.setSelectionRange(selectionStart, selectionEnd);
             }
         }
+        centerPreviewIconsAfterFonts(main as HTMLElement);
         renderSelectionBar(c);
     }
     return {

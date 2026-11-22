@@ -104,7 +104,7 @@ export function createWebStyles(dragAnimation: boolean): string {
         ".sp-btn-icon{position:absolute;left:var(--btn-pad);top:var(--btn-pad);" +
         "font-size:var(--btn-icon);line-height:1;color:var(--card-text-color,var(--preview-text-primary));z-index:1}" +
         ".sp-btn>.sp-btn-label,.sp-btn>.sp-btn-label-row{margin-top:auto}" +
-        ".sp-align-center .sp-btn-icon{left:0;right:0;text-align:center}" +
+        ".sp-align-center .sp-btn-icon{left:0;right:0;width:auto;text-align:center;top:calc(var(--btn-pad) + var(--btn-icon)*.2);transform:translateX(var(--ink-dx,0px))}" +
         ".sp-align-center .sp-btn>.sp-sensor-preview{align-self:center}" +
         ".sp-align-center .sp-btn-label,.sp-align-center .sp-btn>.sp-btn-label-row{text-align:center}" +
         ".sp-align-center .sp-btn-label-row{justify-content:center}" +
