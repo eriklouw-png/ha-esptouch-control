@@ -682,17 +682,28 @@ inline void apply_action_card_info_value(ActionCardStateCtx *ctx, esphome::Strin
   if (!ctx || ctx->info_entity.empty() || !action_card_status_layout(ctx) || !ctx->status_value_lbl) return;
   float val = 0.0f;
   if (!unavailable && parse_float_ref(state, val) && std::isfinite(val)) {
-    char buf[24];
-    format_fixed_decimal(buf, sizeof(buf), val, 1);
-    std::string out(buf);
-    out += ctx->info_unit;
+    // Big number font (digits, '.', '-' and the degree sign only): one decimal when it fits
+    // in the left half, otherwise whole numbers.
     const lv_font_t *big = ctx->sensor_lbl ? lv_obj_get_style_text_font(ctx->sensor_lbl, LV_PART_MAIN) : nullptr;
     if (big) lv_obj_set_style_text_font(ctx->status_value_lbl, big, LV_PART_MAIN);
-    lv_label_set_display_text(ctx->status_value_lbl, out.c_str());
+    lv_label_set_long_mode(ctx->status_value_lbl, LV_LABEL_LONG_CLIP);
+    lv_obj_set_width(ctx->status_value_lbl, LV_SIZE_CONTENT);
+    const int available = lv_obj_get_content_width(ctx->btn) / 2 - 8;
+    for (int decimals = 1; decimals >= 0; decimals--) {
+      char buf[24];
+      format_fixed_decimal(buf, sizeof(buf), val, decimals);
+      std::string out(buf);
+      out += ctx->info_unit;
+      lv_label_set_display_text(ctx->status_value_lbl, out.c_str());
+      lv_obj_update_layout(ctx->status_value_lbl);
+      if (decimals == 0 || lv_obj_get_width(ctx->status_value_lbl) <= available) break;
+    }
   } else {
     std::string out = unavailable ? std::string("--") : text_sensor_display_text(state, HA_STATE_TEXT_MAX_LEN);
     if (!out.empty() && out[0] >= 'a' && out[0] <= 'z') out[0] = static_cast<char>(out[0] - 'a' + 'A');
     lv_obj_set_style_text_font(ctx->status_value_lbl, lv_obj_get_style_text_font(ctx->text_lbl, LV_PART_MAIN), LV_PART_MAIN);
+    lv_label_set_long_mode(ctx->status_value_lbl, LV_LABEL_LONG_DOT);
+    lv_obj_set_width(ctx->status_value_lbl, lv_pct(46));
     lv_label_set_display_text(ctx->status_value_lbl, out.c_str());
   }
 }
