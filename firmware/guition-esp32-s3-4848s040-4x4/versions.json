@@ -1,12 +1,12 @@
 {
   "versions": [
     {
-      "version": "v1.0.9",
+      "version": "v1.0.10",
       "release_url": "https://github.com/eriklouw-png/ha-esptouch-control",
       "ota": {
         "path": "guition-esp32-s3-4848s040-4x4.ota.bin",
-        "md5": "fd76e54258add502f62c6fc1e1bdc103",
-        "summary": "EspControl v1.0.9",
+        "md5": "136dfb9517512ae6c4e9a5010ae02046",
+        "summary": "EspControl v1.0.10",
         "release_url": "https://github.com/eriklouw-png/ha-esptouch-control"
       }
     }
