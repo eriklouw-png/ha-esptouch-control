@@ -551,6 +551,114 @@ export const ENTITY_CATALOG = {
         "card_alignment_select"
       ]
     },
+    "wifi_network_1": {
+      "domain": "text",
+      "name": "WiFi: Network 1",
+      "objectIds": [
+        "wifi__network_1",
+        "wifi_network_1",
+        "wifi_net_1"
+      ]
+    },
+    "wifi_password_1": {
+      "domain": "text",
+      "name": "WiFi: Password 1",
+      "objectIds": [
+        "wifi__password_1",
+        "wifi_password_1",
+        "wifi_pw_1"
+      ]
+    },
+    "wifi_network_2": {
+      "domain": "text",
+      "name": "WiFi: Network 2",
+      "objectIds": [
+        "wifi__network_2",
+        "wifi_network_2",
+        "wifi_net_2"
+      ]
+    },
+    "wifi_password_2": {
+      "domain": "text",
+      "name": "WiFi: Password 2",
+      "objectIds": [
+        "wifi__password_2",
+        "wifi_password_2",
+        "wifi_pw_2"
+      ]
+    },
+    "wifi_network_3": {
+      "domain": "text",
+      "name": "WiFi: Network 3",
+      "objectIds": [
+        "wifi__network_3",
+        "wifi_network_3",
+        "wifi_net_3"
+      ]
+    },
+    "wifi_password_3": {
+      "domain": "text",
+      "name": "WiFi: Password 3",
+      "objectIds": [
+        "wifi__password_3",
+        "wifi_password_3",
+        "wifi_pw_3"
+      ]
+    },
+    "wifi_network_4": {
+      "domain": "text",
+      "name": "WiFi: Network 4",
+      "objectIds": [
+        "wifi__network_4",
+        "wifi_network_4",
+        "wifi_net_4"
+      ]
+    },
+    "wifi_password_4": {
+      "domain": "text",
+      "name": "WiFi: Password 4",
+      "objectIds": [
+        "wifi__password_4",
+        "wifi_password_4",
+        "wifi_pw_4"
+      ]
+    },
+    "wifi_network_5": {
+      "domain": "text",
+      "name": "WiFi: Network 5",
+      "objectIds": [
+        "wifi__network_5",
+        "wifi_network_5",
+        "wifi_net_5"
+      ]
+    },
+    "wifi_password_5": {
+      "domain": "text",
+      "name": "WiFi: Password 5",
+      "objectIds": [
+        "wifi__password_5",
+        "wifi_password_5",
+        "wifi_pw_5"
+      ]
+    },
+    "wifi_network_order": {
+      "domain": "text",
+      "name": "WiFi: Network Order",
+      "objectIds": [
+        "wifi__network_order",
+        "wifi_network_order",
+        "wifi_net_order"
+      ]
+    },
+    "wifi_networks_apply": {
+      "domain": "button",
+      "name": "WiFi: Apply Networks",
+      "objectIds": [
+        "wifi__apply_networks",
+        "wifi_networks_apply",
+        "wifi_networks_apply_button"
+      ]
+    },
     "screen_color_palette": {
       "domain": "text",
       "name": "Screen: Color Palette",
@@ -903,6 +1011,18 @@ export const ENTITY_CATALOG = {
       "screen_card_curve",
       "screen_card_spacing",
       "screen_card_alignment",
+      "wifi_network_1",
+      "wifi_password_1",
+      "wifi_network_2",
+      "wifi_password_2",
+      "wifi_network_3",
+      "wifi_password_3",
+      "wifi_network_4",
+      "wifi_password_4",
+      "wifi_network_5",
+      "wifi_password_5",
+      "wifi_network_order",
+      "wifi_networks_apply",
       "screen_color_palette",
       "screen_label_size",
       "screen_theme_auto_method",

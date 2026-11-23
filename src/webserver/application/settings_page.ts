@@ -48,7 +48,7 @@ export interface SettingsPageFeature {
     buildSettingsPage(...args: any[]): any;
 }
 
-export function createSettingsPageFeature(codec: Pick<ConfigCodecFeature, "bindTextPost">, runtime: UiRuntimeState, core: Pick<CoreFeature, "syncPreviewOrientation">, layout: ApplicationLayoutState, environment: EnvironmentStateFeature, schedule: ScreenScheduleStateFeature, screensaverTimeout: ScreensaverTimeoutFeature, screenRotation: ScreenRotationFeature, appearance: AppearanceFeature, clockBar: ClockBarFeature, entityState: Pick<EntityStateFeature, "entityName" | "entityInput">, shell: Pick<ControlsShellFeature, "createActionButton" | "buildApplyBar">, requestApi: Pick<ApplicationApiFeature, "postText" | "postSelect" | "postNumber" | "postScreensaverMode" | "postScreensaverTimeout" | "postHomeScreenTimeout">, statusPreview: Pick<AppStatusPreviewFeature, "appendTimezoneOption" | "syncInput" | "updateClock" | "updateSunInfo" | "updateTempPreview">, artworkPostApi: Pick<ArtworkPostApiFeature, "postPresenceSensorEntity" | "postClockOverlay" | "postMetadataOverlay">, schedulePostApi: Pick<ScreenSchedulePostApiFeature, "postBrightnessMode" | "postDisplayBacklightBrightness" | "postBrightnessDawnTime" | "postBrightnessDuskTime">, clockBarPostApi: Pick<ClockBarPostApiFeature, "postClockBar" | "postClockBarNightMode" | "postBatteryStatus">, fields: Pick<ControlsFieldsFeature, "condField" | "createRangeSlider" | "fieldLabel" | "makeCollapsibleCard" | "segmentControl" | "selectField" | "textInput" | "toggleRow">, helpers: Pick<SettingsPageHelpersFeature, "appendSettingsSection" | "createScreensaverThenControls" | "createTimeInput" | "statusBadge" | "syncClockScreensaverControls" | "syncCoverArtScreensaverUi" | "syncMediaPlayerSleepPreventionUi">, scheduleSection: SettingsScheduleSectionFeature, coverArtSection: SettingsCoverArtSectionFeature, systemSection: SettingsSystemSectionFeature, preview: Pick<PreviewRenderFeature, "render">): SettingsPageFeature {
+export function createSettingsPageFeature(codec: Pick<ConfigCodecFeature, "bindTextPost">, runtime: UiRuntimeState, core: Pick<CoreFeature, "syncPreviewOrientation">, layout: ApplicationLayoutState, environment: EnvironmentStateFeature, schedule: ScreenScheduleStateFeature, screensaverTimeout: ScreensaverTimeoutFeature, screenRotation: ScreenRotationFeature, appearance: AppearanceFeature, clockBar: ClockBarFeature, entityState: Pick<EntityStateFeature, "entityName" | "entityInput">, shell: Pick<ControlsShellFeature, "createActionButton" | "buildApplyBar">, requestApi: Pick<ApplicationApiFeature, "postText" | "postButtonPress" | "postSelect" | "postNumber" | "postScreensaverMode" | "postScreensaverTimeout" | "postHomeScreenTimeout">, statusPreview: Pick<AppStatusPreviewFeature, "appendTimezoneOption" | "syncInput" | "updateClock" | "updateSunInfo" | "updateTempPreview">, artworkPostApi: Pick<ArtworkPostApiFeature, "postPresenceSensorEntity" | "postClockOverlay" | "postMetadataOverlay">, schedulePostApi: Pick<ScreenSchedulePostApiFeature, "postBrightnessMode" | "postDisplayBacklightBrightness" | "postBrightnessDawnTime" | "postBrightnessDuskTime">, clockBarPostApi: Pick<ClockBarPostApiFeature, "postClockBar" | "postClockBarNightMode" | "postBatteryStatus">, fields: Pick<ControlsFieldsFeature, "condField" | "createRangeSlider" | "fieldLabel" | "makeCollapsibleCard" | "segmentControl" | "selectField" | "textInput" | "toggleRow">, helpers: Pick<SettingsPageHelpersFeature, "appendSettingsSection" | "createScreensaverThenControls" | "createTimeInput" | "statusBadge" | "syncClockScreensaverControls" | "syncCoverArtScreensaverUi" | "syncMediaPlayerSleepPreventionUi">, scheduleSection: SettingsScheduleSectionFeature, coverArtSection: SettingsCoverArtSectionFeature, systemSection: SettingsSystemSectionFeature, preview: Pick<PreviewRenderFeature, "render">): SettingsPageFeature {
     const { render: renderPreview } = preview;
     const { appendSettingsSection, createScreensaverThenControls, createTimeInput, statusBadge, syncClockScreensaverControls, syncCoverArtScreensaverUi, syncMediaPlayerSleepPreventionUi } = helpers;
     const { buildScreenScheduleSettingsCard } = scheduleSection;
@@ -57,7 +57,7 @@ export function createSettingsPageFeature(codec: Pick<ConfigCodecFeature, "bindT
     const { condField, createRangeSlider, fieldLabel, makeCollapsibleCard, segmentControl, selectField, textInput, toggleRow } = fields;
     const { createActionButton, buildApplyBar } = shell;
     const { entityName, entityInput } = entityState;
-    const { postText, postSelect, postNumber, postScreensaverMode, postScreensaverTimeout, postHomeScreenTimeout } = requestApi;
+    const { postText, postButtonPress, postSelect, postNumber, postScreensaverMode, postScreensaverTimeout, postHomeScreenTimeout } = requestApi;
     const { bindTextPost } = codec;
     const { appendTimezoneOption, syncInput, updateClock, updateSunInfo, updateTempPreview } = statusPreview;
     const { syncPreviewOrientation } = core;
@@ -286,6 +286,140 @@ export function createSettingsPageFeature(codec: Pick<ConfigCodecFeature, "bindT
         }
         els.renderColorPalette = renderPalette;
         renderPalette();
+        // ── WiFi networks: several saved networks in connection order (System). ──
+        var wifiBody: any = document.createElement("div");
+        wifiBody.id = "sp-set-wifi";
+        function wifiOrderSlots(): number[] {
+            var slots: number[] = [];
+            String(state.wifiOrder || "").split(",").forEach(function (token: string) {
+                var slot = parseInt(token, 10) - 1;
+                if (slot >= 0 && slot < 5 && slots.indexOf(slot) < 0) slots.push(slot);
+            });
+            for (var s = 0; s < 5; s++) if (slots.indexOf(s) < 0) slots.push(s);
+            return slots;
+        }
+        function saveWifiOrder(slots: number[]) {
+            state.wifiOrder = slots.map(function (slot: number) { return String(slot + 1); }).join(",");
+            postText(entityName("wifi_network_order"), state.wifiOrder);
+        }
+        function renderWifi() {
+            wifiBody.textContent = "";
+            var supported = !!state.wifiNetworksSupported;
+            var hint: any = document.createElement("div");
+            hint.className = "sp-hint";
+            hint.textContent = supported
+                ? "The panel tries these networks from top to bottom, then by signal strength. The network it already had stays as the last fallback. Changes apply after Save and restart."
+                : "This panel does not support several WiFi networks yet.";
+            wifiBody.appendChild(hint);
+            var slots = wifiOrderSlots();
+            var shown = 0;
+            slots.forEach(function (slot: number, position: number) {
+                var ssid = String(state.wifiNetworks[slot] || "");
+                if (!ssid) return;
+                shown++;
+                var row: any = document.createElement("div");
+                row.className = "sp-palette-row";
+                var rank: any = document.createElement("span");
+                rank.className = "sp-wifi-rank";
+                rank.textContent = String(shown);
+                var name: any = document.createElement("span");
+                name.className = "sp-palette-name";
+                name.textContent = ssid;
+                var up: any = createActionButton("sp-icon-button", "", "chevron-up", "Move up");
+                var down: any = createActionButton("sp-icon-button", "", "chevron-down", "Move down");
+                var remove: any = createActionButton("sp-icon-button", "", "delete", "Remove network " + ssid);
+                function neighbour(direction: number): number {
+                    for (var p = position + direction; p >= 0 && p < slots.length; p += direction)
+                        if (String(state.wifiNetworks[slots[p] as number] || "")) return p;
+                    return -1;
+                }
+                up.disabled = !supported || neighbour(-1) < 0;
+                down.disabled = !supported || neighbour(1) < 0;
+                remove.disabled = !supported;
+                function move(direction: number) {
+                    var other = neighbour(direction);
+                    if (other < 0) return;
+                    var next = slots.slice();
+                    var t = next[position] as number; next[position] = next[other] as number; next[other] = t;
+                    saveWifiOrder(next);
+                    renderWifi();
+                }
+                up.addEventListener("click", function () { move(-1); });
+                down.addEventListener("click", function () { move(1); });
+                remove.addEventListener("click", function () {
+                    state.wifiNetworks[slot] = "";
+                    postText(entityName("wifi_network_" + (slot + 1)), "");
+                    postText(entityName("wifi_password_" + (slot + 1)), "");
+                    renderWifi();
+                });
+                row.appendChild(rank);
+                row.appendChild(name);
+                row.appendChild(up);
+                row.appendChild(down);
+                row.appendChild(remove);
+                wifiBody.appendChild(row);
+            });
+            if (!shown) {
+                var empty: any = document.createElement("div");
+                empty.className = "sp-hint";
+                empty.textContent = "No extra networks saved yet.";
+                wifiBody.appendChild(empty);
+            }
+            var addRow: any = document.createElement("div");
+            addRow.className = "sp-palette-row";
+            var addSsid: any = document.createElement("input");
+            addSsid.type = "text";
+            addSsid.className = "sp-input";
+            addSsid.placeholder = "Network name (SSID)";
+            addSsid.maxLength = 32;
+            addSsid.autocomplete = "off";
+            var addPassword: any = document.createElement("input");
+            addPassword.type = "password";
+            addPassword.className = "sp-input";
+            addPassword.placeholder = "Password";
+            addPassword.maxLength = 63;
+            addPassword.autocomplete = "new-password";
+            var addBtn: any = createActionButton("sp-action-btn", "Add network");
+            var full = slots.every(function (slot: number) { return !!state.wifiNetworks[slot]; });
+            addSsid.disabled = addPassword.disabled = addBtn.disabled = !supported || full;
+            addBtn.addEventListener("click", function () {
+                var wanted = String(addSsid.value || "").trim();
+                if (!wanted) return;
+                var free = -1;
+                for (var s = 0; s < 5; s++) {
+                    if (String(state.wifiNetworks[s] || "").toLowerCase() === wanted.toLowerCase()) { free = s; break; }
+                    if (free < 0 && !state.wifiNetworks[s]) free = s;
+                }
+                if (free < 0) return;
+                state.wifiNetworks[free] = wanted;
+                postText(entityName("wifi_network_" + (free + 1)), wanted);
+                postText(entityName("wifi_password_" + (free + 1)), String(addPassword.value || ""));
+                // A new network joins at the end of the order.
+                var order = wifiOrderSlots().filter(function (slot: number) { return slot !== free; });
+                order.push(free);
+                saveWifiOrder(order);
+                renderWifi();
+            });
+            addRow.appendChild(addSsid);
+            wifiBody.appendChild(addRow);
+            var pwRow: any = document.createElement("div");
+            pwRow.className = "sp-palette-row";
+            pwRow.appendChild(addPassword);
+            pwRow.appendChild(addBtn);
+            wifiBody.appendChild(pwRow);
+            var restartRow: any = document.createElement("div");
+            restartRow.className = "sp-btn-row";
+            var restartBtn: any = createActionButton("sp-action-btn sp-save-btn", "Save and restart");
+            restartBtn.disabled = !supported;
+            restartBtn.addEventListener("click", function () {
+                postButtonPress(entityName("wifi_networks_apply"));
+            });
+            restartRow.appendChild(restartBtn);
+            wifiBody.appendChild(restartRow);
+        }
+        els.renderWifiNetworks = renderWifi;
+        renderWifi();
+        var wifiCard: any = makeCollapsibleCard("WiFi Networks", wifiBody, true);
         var cardStyleCard: any = makeCollapsibleCard("Card Style", cardStyleBody, true);
         var paletteCard: any = makeCollapsibleCard("Standard Colours", paletteBody, true);
         var themeCard: any = makeCollapsibleCard("Theme", themeBody, true);
@@ -776,6 +910,7 @@ export function createSettingsPageFeature(codec: Pick<ConfigCodecFeature, "bindT
             systemSettingsCards.identityCard,
             systemSettingsCards.backupCard,
             systemSettingsCards.firmwareCard,
+            wifiCard,
             systemSettingsCards.homeAssistantSettingsCard,
             batteryStatusCard,
             systemSettingsCards.resetCard,

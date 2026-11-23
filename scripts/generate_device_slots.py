@@ -192,6 +192,7 @@ def package_file_text(device: dict) -> str:
             include_line("button_order", "!include ../../common/config/button_order.yaml"),
             include_line("display_config", "!include ../../common/config/display.yaml"),
             *([include_line("card_style", "!include ../../common/config/card_style.yaml")] if package.get("cardStyleControls", False) else []),
+            *([include_line("wifi_networks", "!include ../../common/config/wifi_networks.yaml")] if package.get("cardStyleControls", False) else []),
             button_package_block(device).rstrip(),
             "  # ---------------------------------------------------------------------------",
             "  # Addons",

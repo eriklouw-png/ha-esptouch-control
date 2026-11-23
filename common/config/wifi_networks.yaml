@@ -1,0 +1,183 @@
+# =============================================================================
+# CONFIG: WIFI NETWORKS - several saved networks, in connection order
+# =============================================================================
+# Runtime settings, shown in the panel's web page under System > WiFi Networks.
+# Included only by devices that opt in with firmware.package.cardStyleControls.
+#
+#   WiFi: Network N   SSID of saved network N (slot 1-5)
+#   WiFi: Password N  its password (write only, hidden)
+#   WiFi: Network Order  slot numbers in connection order, e.g. "2,1,3,4,5"
+#   WiFi: Apply Networks  restarts the panel so the new list is used
+#
+# At boot the networks are added to the WiFi component with a priority that
+# follows the order (the first is tried first, then by signal strength). The
+# network the panel already had saved stays as the last fallback.
+# =============================================================================
+
+esphome:
+  on_boot:
+    priority: 200
+    then:
+      - lambda: |-
+          const std::string ssids[WIFI_NETWORK_SLOTS] = {
+            id(wifi_net_1).state, id(wifi_net_2).state, id(wifi_net_3).state, id(wifi_net_4).state, id(wifi_net_5).state};
+          const std::string passwords[WIFI_NETWORK_SLOTS] = {
+            id(wifi_pw_1).state, id(wifi_pw_2).state, id(wifi_pw_3).state, id(wifi_pw_4).state, id(wifi_pw_5).state};
+          wifi_networks_apply(ssids, passwords, id(wifi_net_order).state);
+
+button:
+  - platform: template
+    name: "${entity_wifi_networks_apply}"
+    id: wifi_networks_apply_button
+    entity_category: config
+    icon: "mdi:wifi-sync"
+    web_server:
+      sorting_group_id: sg_display
+    on_press:
+      then:
+        - lambda: 'App.safe_reboot();'
+
+text:
+  - platform: template
+    name: "${entity_wifi_network_1}"
+    id: wifi_net_1
+    entity_category: config
+    icon: "mdi:wifi"
+    optimistic: true
+    restore_value: true
+    initial_value: ""
+    min_length: 0
+    max_length: 32
+    mode: text
+    web_server:
+      sorting_group_id: sg_display
+  - platform: template
+    name: "${entity_wifi_password_1}"
+    id: wifi_pw_1
+    entity_category: config
+    icon: "mdi:form-textbox-password"
+    optimistic: true
+    restore_value: true
+    initial_value: ""
+    min_length: 0
+    max_length: 63
+    mode: password
+    web_server:
+      sorting_group_id: sg_display
+  - platform: template
+    name: "${entity_wifi_network_2}"
+    id: wifi_net_2
+    entity_category: config
+    icon: "mdi:wifi"
+    optimistic: true
+    restore_value: true
+    initial_value: ""
+    min_length: 0
+    max_length: 32
+    mode: text
+    web_server:
+      sorting_group_id: sg_display
+  - platform: template
+    name: "${entity_wifi_password_2}"
+    id: wifi_pw_2
+    entity_category: config
+    icon: "mdi:form-textbox-password"
+    optimistic: true
+    restore_value: true
+    initial_value: ""
+    min_length: 0
+    max_length: 63
+    mode: password
+    web_server:
+      sorting_group_id: sg_display
+  - platform: template
+    name: "${entity_wifi_network_3}"
+    id: wifi_net_3
+    entity_category: config
+    icon: "mdi:wifi"
+    optimistic: true
+    restore_value: true
+    initial_value: ""
+    min_length: 0
+    max_length: 32
+    mode: text
+    web_server:
+      sorting_group_id: sg_display
+  - platform: template
+    name: "${entity_wifi_password_3}"
+    id: wifi_pw_3
+    entity_category: config
+    icon: "mdi:form-textbox-password"
+    optimistic: true
+    restore_value: true
+    initial_value: ""
+    min_length: 0
+    max_length: 63
+    mode: password
+    web_server:
+      sorting_group_id: sg_display
+  - platform: template
+    name: "${entity_wifi_network_4}"
+    id: wifi_net_4
+    entity_category: config
+    icon: "mdi:wifi"
+    optimistic: true
+    restore_value: true
+    initial_value: ""
+    min_length: 0
+    max_length: 32
+    mode: text
+    web_server:
+      sorting_group_id: sg_display
+  - platform: template
+    name: "${entity_wifi_password_4}"
+    id: wifi_pw_4
+    entity_category: config
+    icon: "mdi:form-textbox-password"
+    optimistic: true
+    restore_value: true
+    initial_value: ""
+    min_length: 0
+    max_length: 63
+    mode: password
+    web_server:
+      sorting_group_id: sg_display
+  - platform: template
+    name: "${entity_wifi_network_5}"
+    id: wifi_net_5
+    entity_category: config
+    icon: "mdi:wifi"
+    optimistic: true
+    restore_value: true
+    initial_value: ""
+    min_length: 0
+    max_length: 32
+    mode: text
+    web_server:
+      sorting_group_id: sg_display
+  - platform: template
+    name: "${entity_wifi_password_5}"
+    id: wifi_pw_5
+    entity_category: config
+    icon: "mdi:form-textbox-password"
+    optimistic: true
+    restore_value: true
+    initial_value: ""
+    min_length: 0
+    max_length: 63
+    mode: password
+    web_server:
+      sorting_group_id: sg_display
+  - platform: template
+    name: "${entity_wifi_network_order}"
+    id: wifi_net_order
+    entity_category: config
+    icon: "mdi:order-numeric-ascending"
+    optimistic: true
+    restore_value: true
+    initial_value: "1,2,3,4,5"
+    min_length: 0
+    max_length: 20
+    mode: text
+    web_server:
+      sorting_group_id: sg_display

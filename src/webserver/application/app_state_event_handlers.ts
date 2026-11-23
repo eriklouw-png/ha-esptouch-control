@@ -85,6 +85,11 @@ export function createAppStateEventHandlersFeature(
 ): AppStateEventHandlersFeature {
     const { syncAlarmDelayAudioUi, syncClockScreensaverControls, syncCoverArtScreensaverUi, syncMediaPlayerSleepPreventionUi } = settingsHelpers;
     const { render: renderPreview } = preview;
+    function setWifiNetwork(index: number, d: any, val: any) {
+        state.wifiNetworks[index] = String(d && d.value !== undefined ? d.value : val || "");
+        state.wifiNetworksSupported = true;
+        syncColorPaletteUi(state, runtime);
+    }
     const { syncPreviewOrientation } = core;
     const els = runtime.els;
     const { timezoneOptionsWithFallback, isHomeAssistantAutoTimezone } = environment;
@@ -450,6 +455,16 @@ export function createAppStateEventHandlersFeature(
                 syncCardCurveUi(state, runtime);
                 syncPreviewOrientation(true);
                 renderPreview();
+            },
+            "text-wifi__network_1": function (this: any, val?: any, d?: any) { setWifiNetwork(0, d, val); },
+            "text-wifi__network_2": function (this: any, val?: any, d?: any) { setWifiNetwork(1, d, val); },
+            "text-wifi__network_3": function (this: any, val?: any, d?: any) { setWifiNetwork(2, d, val); },
+            "text-wifi__network_4": function (this: any, val?: any, d?: any) { setWifiNetwork(3, d, val); },
+            "text-wifi__network_5": function (this: any, val?: any, d?: any) { setWifiNetwork(4, d, val); },
+            "text-wifi__network_order": function (this: any, val?: any, d?: any) {
+                state.wifiOrder = String(d && d.value !== undefined ? d.value : val || "") || "1,2,3,4,5";
+                state.wifiNetworksSupported = true;
+                syncColorPaletteUi(state, runtime);
             },
             "text-screen__color_palette": function (this: any, val?: any, d?: any) {
                 state.colorPalette = String(d && d.value !== undefined ? d.value : val || "");

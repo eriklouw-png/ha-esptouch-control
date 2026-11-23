@@ -4,6 +4,8 @@ import type { UiRuntimeState } from "./state";
 export function syncColorPaletteUi(state: AppState, runtime: UiRuntimeState): void {
   const render = (runtime.els as any).renderColorPalette;
   if (typeof render === "function") render();
+  const renderWifi = (runtime.els as any).renderWifiNetworks;
+  if (typeof renderWifi === "function") renderWifi();
 }
 
 export function syncCardStyleExtrasUi(state: AppState, runtime: UiRuntimeState): void {

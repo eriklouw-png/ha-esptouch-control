@@ -202,6 +202,9 @@ export interface AppState {
   cardCurveSupported: boolean;
   cardAlignment: string;
   colorPalette: string;
+  wifiNetworks: string[];
+  wifiOrder: string;
+  wifiNetworksSupported: boolean;
   colorPaletteSupported: boolean;
   cardAlignmentSupported: boolean;
   cardGap: number;

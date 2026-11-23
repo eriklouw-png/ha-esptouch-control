@@ -34,6 +34,9 @@
 #include "button_grid_limits.h"
 #include "button_grid_string.h"
 #include "display_text.h"
+#if __has_include("esphome/components/wifi/wifi_component.h")
+#include "wifi_networks.h"
+#endif
 
 #include "button_grid_ha.h"
 #include "ha_connection_warning.h"
