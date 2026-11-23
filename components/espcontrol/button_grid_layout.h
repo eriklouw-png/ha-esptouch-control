@@ -2,8 +2,51 @@
 
 // Internal implementation detail for button_grid.h. Include button_grid.h from device YAML.
 
-// Parse a 6-char hex color string (no # prefix) into a uint32_t RGB value
-inline uint32_t parse_hex_color(const std::string &hex, bool &valid) {
+// Standard colours: "Name=RRGGBB;Name=RRGGBB". A card colour written as "@Name" follows the
+// palette, so changing the palette changes every card that uses that name.
+inline std::string &color_palette_spec() {
+  static std::string spec;
+  return spec;
+}
+
+inline std::string color_palette_lookup(const std::string &name) {
+  const std::string &spec = color_palette_spec();
+  size_t pos = 0;
+  while (pos < spec.size()) {
+    size_t end = spec.find(';', pos);
+    if (end == std::string::npos) end = spec.size();
+    const size_t eq = spec.find('=', pos);
+    if (eq != std::string::npos && eq < end) {
+      const std::string key = spec.substr(pos, eq - pos);
+      if (key.size() == name.size()) {
+        bool same = true;
+        for (size_t i = 0; i < key.size(); ++i) {
+          char a = key[i], b = name[i];
+          if (a >= 'A' && a <= 'Z') a = static_cast<char>(a - 'A' + 'a');
+          if (b >= 'A' && b <= 'Z') b = static_cast<char>(b - 'A' + 'a');
+          if (a != b) { same = false; break; }
+        }
+        if (same) {
+          std::string hex = spec.substr(eq + 1, end - eq - 1);
+          if (!hex.empty() && hex[0] == '#') hex.erase(0, 1);
+          return hex;
+        }
+      }
+    }
+    pos = end + 1;
+  }
+  return "";
+}
+
+// Colour reference ("@Name") or plain hex -> plain 6-char hex ("" when unknown).
+inline std::string resolve_color_ref(const std::string &value) {
+  if (!value.empty() && value[0] == '@') return color_palette_lookup(value.substr(1));
+  return value;
+}
+
+// Parse a 6-char hex color string (no # prefix) or a "@Name" palette reference into a uint32_t RGB value
+inline uint32_t parse_hex_color(const std::string &raw, bool &valid) {
+  const std::string hex = resolve_color_ref(raw);
   valid = hex.length() == 6;
   if (!valid) return 0;
   return strtoul(hex.c_str(), nullptr, 16);

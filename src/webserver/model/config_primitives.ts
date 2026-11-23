@@ -70,8 +70,60 @@ export function setConfigOptionValue(options: unknown, name: string, value: unkn
 
 const CARD_COLOR_OPTIONS = ["card_on_color", "card_off_color", "card_active_color"] as const;
 
+// ── Standard colours ("palette") ─────────────────────────────────────────
+// A card colour written as "@Name" follows the palette, so changing a palette colour changes
+// every card that uses that name. The palette is stored as "Name=RRGGBB;Name=RRGGBB".
+export interface PaletteColor { name: string; hex: string }
+export const DEFAULT_COLOR_PALETTE = "Aan=FF8C00;Uit=313131;Geel=FFB300;Groen=66BB6A;Blauw=1E88E5;Lichtblauw=4FC3F7;Rood=E64A19;Paars=8F28AB;Grijs=7B797F";
+let activePalette: PaletteColor[] = [];
+
+export function cleanPaletteName(value: unknown): string {
+  return String(value || "").replace(/[@,;=:#]/g, "").trim().slice(0, 20);
+}
+
+export function parseColorPalette(spec: unknown): PaletteColor[] {
+  const out: PaletteColor[] = [];
+  for (const part of String(spec || "").split(";")) {
+    const eq = part.indexOf("=");
+    if (eq < 1) continue;
+    const name = cleanPaletteName(part.slice(0, eq));
+    const hex = part.slice(eq + 1).replace(/^#/, "").trim().toUpperCase();
+    if (!name || !/^[0-9A-F]{6}$/.test(hex)) continue;
+    if (out.some((entry) => entry.name.toLowerCase() === name.toLowerCase())) continue;
+    out.push({ name, hex });
+  }
+  return out;
+}
+
+export function serializeColorPalette(colors: PaletteColor[]): string {
+  return colors.map((entry) => entry.name + "=" + entry.hex).join(";");
+}
+
+export function setColorPalette(spec: unknown): void {
+  activePalette = parseColorPalette(spec);
+}
+
+export function getColorPalette(): PaletteColor[] {
+  return activePalette.slice();
+}
+
+export function isColorRef(value: unknown): boolean {
+  return /^@[^@,;=:#]{1,20}$/.test(String(value || ""));
+}
+
+// "@Name" -> hex of that palette colour ("" when unknown); anything else is returned unchanged.
+export function resolveColorRef(value: unknown): string {
+  const text = String(value || "");
+  if (!isColorRef(text)) return text;
+  const wanted = text.slice(1).toLowerCase();
+  const found = activePalette.find((entry) => entry.name.toLowerCase() === wanted);
+  return found ? found.hex : "";
+}
+
 function normalizedColor(value: unknown): string {
-  const hex = String(value || "").replace(/^#/, "").toUpperCase();
+  const raw = String(value || "").trim();
+  if (isColorRef(raw)) return raw;  // palette reference: kept as written
+  const hex = raw.replace(/^#/, "").toUpperCase();
   return /^[0-9A-F]{6}$/.test(hex) ? hex : "";
 }
 
@@ -115,11 +167,11 @@ export function setCardActiveColor(options: unknown, mode: "matching" | "theme" 
 export function cardActiveColor(options: unknown, themeColor: string): string {
   const mode = cardActiveColorMode(options);
   if (mode === "custom") {
-    const color = normalizedColor(configOptionValue(options, "card_on_color"));
+    const color = normalizedColor(resolveColorRef(configOptionValue(options, "card_on_color")));
     if (color) return color;
   }
   if (mode !== "theme") {
-    const matching = activeCardColor(configOptionValue(options, "card_off_color"));
+    const matching = activeCardColor(resolveColorRef(configOptionValue(options, "card_off_color")));
     if (matching) return matching;
   }
   return normalizedColor(themeColor) || "FF8C00";

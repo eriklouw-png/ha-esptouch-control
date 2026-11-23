@@ -800,6 +800,12 @@ int main() {
   bool valid = false;
   assert(parse_hex_color("FF8C00", valid) == 0xFF8C00 && valid);
   assert(parse_hex_color("BAD", valid) == 0 && !valid);
+  color_palette_spec() = "Groen=66BB6A;Rood=E64A19";
+  assert(parse_hex_color("@groen", valid) == 0x66BB6A && valid);
+  assert(parse_hex_color("@Rood", valid) == 0xE64A19 && valid);
+  assert(parse_hex_color("@Onbekend", valid) == 0 && !valid);
+  assert(normalize_card_color_value("@Groen") == "@Groen");
+  color_palette_spec() = "";
   assert(!ha_entity_state_unavailable_ref("button.test", "unknown"));
   assert(!ha_entity_state_unavailable_ref("input_button.test", "unknown"));
   assert(!ha_entity_state_unavailable_ref("select.test", "unknown"));

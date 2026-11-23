@@ -381,6 +381,7 @@ def cfg_lines(device: dict) -> list[str]:
                 "              lv_obj_set_style_pad_row(id(main_page)->obj, gap, LV_PART_MAIN);",
                 "              lv_obj_set_style_pad_column(id(main_page)->obj, gap, LV_PART_MAIN);",
                 "              cfg.card_align_center = id(card_alignment_select).current_option() == \"Centered\";",
+                "              color_palette_spec() = id(color_palette_text).state;",
                 "              // Label Size: card label font (subpages copy it from the first card).",
                 "              const std::string label_size = id(label_size_select).current_option();",
                 "              const lv_font_t *label_font = label_size == \"Small\"",

@@ -1,6 +1,11 @@
 import type { AppState } from "../state/types";
 import type { UiRuntimeState } from "./state";
 
+export function syncColorPaletteUi(state: AppState, runtime: UiRuntimeState): void {
+  const render = (runtime.els as any).renderColorPalette;
+  if (typeof render === "function") render();
+}
+
 export function syncCardStyleExtrasUi(state: AppState, runtime: UiRuntimeState): void {
   const els = runtime.els;
   if (els.setCardStyleExtras) els.setCardStyleExtras.hidden = !(state.cardGapSupported || state.labelSizeSupported || state.cardAlignmentSupported);

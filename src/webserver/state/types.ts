@@ -201,6 +201,8 @@ export interface AppState {
   cardCurve: string;
   cardCurveSupported: boolean;
   cardAlignment: string;
+  colorPalette: string;
+  colorPaletteSupported: boolean;
   cardAlignmentSupported: boolean;
   cardGap: number;
   cardGapSupported: boolean;

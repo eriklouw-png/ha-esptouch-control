@@ -11,7 +11,7 @@
   "summary": {
     "deviceProfiles": 12,
     "cardTypes": 44,
-    "entityNames": 116,
+    "entityNames": 117,
     "icons": 500,
     "structuralIcons": 28,
     "compatibilityFixtureGroups": 2
@@ -8423,6 +8423,19 @@
           "screen__card_alignment",
           "screen_card_alignment",
           "card_alignment_select"
+        ],
+        "groups": [
+          "settings"
+        ]
+      },
+      {
+        "key": "screen_color_palette",
+        "domain": "text",
+        "name": "Screen: Color Palette",
+        "objectIds": [
+          "screen__color_palette",
+          "screen_color_palette",
+          "color_palette_text"
         ],
         "groups": [
           "settings"

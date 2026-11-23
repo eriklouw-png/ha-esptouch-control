@@ -4,6 +4,7 @@ import { state } from "../state/app_instance";
 import { NTP_SERVER_DEFAULTS } from "../state/app_state";
 import { WEB_UI_COLORS } from "../state/ui_tokens";
 import { createColorSwatches } from "../components/color_swatches";
+import { DEFAULT_COLOR_PALETTE, cleanPaletteName, parseColorPalette, serializeColorPalette, setColorPalette } from "../model/config_primitives";
 import {
     normalizeBrightnessMode,
     normalizeLanguage,
@@ -96,7 +97,7 @@ export function createSettingsPageFeature(codec: Pick<ConfigCodecFeature, "bindT
             state.onColor = hex;
             renderPreview();
             postText(entityName("button_on_color"), hex);
-        }, "Active colour presets");
+        }, "Active colour presets", "standard", false);
         onColor.id = "sp-set-on-color";
         activeColourBody.appendChild(onColor);
         els.setOnColor = onColor;
@@ -216,7 +217,77 @@ export function createSettingsPageFeature(codec: Pick<ConfigCodecFeature, "bindT
             resetAppearanceColors(true);
         });
         var activeColourCard: any = makeCollapsibleCard("Active Colour", activeColourBody, true, null, appearanceResetButton);
+        // ── Standard colours: a named palette. Cards that use "@Name" follow it. ──
+        var paletteBody: any = document.createElement("div");
+        paletteBody.id = "sp-set-palette";
+        function savePalette(colors: any[]) {
+            state.colorPalette = serializeColorPalette(colors);
+            setColorPalette(state.colorPalette);
+            renderPreview();
+            postText(entityName("screen_color_palette"), state.colorPalette);
+        }
+        function renderPalette() {
+            paletteBody.textContent = "";
+            var hint: any = document.createElement("div");
+            hint.className = "sp-hint";
+            hint.textContent = state.colorPaletteSupported
+                ? "Pick these colours on a card. Change a colour here and every card that uses it changes too."
+                : "This panel does not support standard colours yet.";
+            paletteBody.appendChild(hint);
+            var colors: any[] = parseColorPalette(state.colorPalette || DEFAULT_COLOR_PALETTE);
+            colors.forEach(function (entry: any, index: number) {
+                var row: any = document.createElement("div");
+                row.className = "sp-palette-row";
+                var picker: any = document.createElement("input");
+                picker.type = "color";
+                picker.value = "#" + entry.hex;
+                picker.disabled = !state.colorPaletteSupported;
+                picker.setAttribute("aria-label", "Colour " + entry.name);
+                picker.addEventListener("change", function (this: any) {
+                    colors[index] = { name: entry.name, hex: String(this.value).slice(1).toUpperCase() };
+                    savePalette(colors);
+                });
+                var name: any = document.createElement("span");
+                name.className = "sp-palette-name";
+                name.textContent = entry.name;
+                var remove: any = createActionButton("sp-icon-button", "", "delete", "Remove colour " + entry.name);
+                remove.disabled = !state.colorPaletteSupported;
+                remove.addEventListener("click", function () {
+                    colors.splice(index, 1);
+                    savePalette(colors);
+                    renderPalette();
+                });
+                row.appendChild(picker);
+                row.appendChild(name);
+                row.appendChild(remove);
+                paletteBody.appendChild(row);
+            });
+            var addRow: any = document.createElement("div");
+            addRow.className = "sp-palette-row";
+            var addName: any = document.createElement("input");
+            addName.type = "text";
+            addName.className = "sp-input";
+            addName.placeholder = "New colour name";
+            addName.maxLength = 20;
+            addName.disabled = !state.colorPaletteSupported;
+            var addBtn: any = createActionButton("sp-action-btn", "Add colour");
+            addBtn.disabled = !state.colorPaletteSupported;
+            addBtn.addEventListener("click", function () {
+                var wanted = cleanPaletteName(addName.value);
+                if (!wanted || colors.some(function (c: any) { return c.name.toLowerCase() === wanted.toLowerCase(); })) return;
+                if (serializeColorPalette(colors.concat([{ name: wanted, hex: "808080" }])).length > 255) return;
+                colors.push({ name: wanted, hex: "808080" });
+                savePalette(colors);
+                renderPalette();
+            });
+            addRow.appendChild(addName);
+            addRow.appendChild(addBtn);
+            paletteBody.appendChild(addRow);
+        }
+        els.renderColorPalette = renderPalette;
+        renderPalette();
         var cardStyleCard: any = makeCollapsibleCard("Card Style", cardStyleBody, true);
+        var paletteCard: any = makeCollapsibleCard("Standard Colours", paletteBody, true);
         var themeCard: any = makeCollapsibleCard("Theme", themeBody, true);
         var languageBody: any = document.createElement("div");
         var languageField: any = document.createElement("div");
@@ -681,6 +752,7 @@ export function createSettingsPageFeature(codec: Pick<ConfigCodecFeature, "bindT
         appendSettingsSection(config, "Appearance", [
             activeColourCard,
             cardStyleCard,
+            paletteCard,
             themeCard,
             idleCard,
             clockBarCard,

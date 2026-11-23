@@ -1,5 +1,5 @@
 import { cardPreviewTextColor } from "../features/preview";
-import { activeCardColor } from "../model/config_primitives";
+import { activeCardColor, getColorPalette, isColorRef } from "../model/config_primitives";
 
 const COLOR_PRESETS: ReadonlyArray<readonly [string, string]> = [
     ["EA3323", "Red"], ["D83462", "Pink"], ["8F28AB", "Purple"], ["6036B2", "Deep purple"], ["3C49A5", "Indigo"],
@@ -21,8 +21,16 @@ export const COLOR_SWATCH_STYLES =
     ".sp-card-color-custom:focus-within{outline:2px solid var(--accent);outline-offset:3px}" +
     ".sp-card-color-custom input{position:absolute;inset:0;width:100%;height:100%;padding:0;border:0;opacity:0;cursor:pointer}";
 
-export function createColorSwatches(value: string | (() => string), onChange: (hex: string) => void, label: string, tone: "standard" | "active" = "standard") {
-    const presets = COLOR_PRESETS.map(([hex, name]) => [tone === "active" ? activeCardColor(hex) : hex, name] as const);
+export function createColorSwatches(value: string | (() => string), onChange: (hex: string) => void, label: string, tone: "standard" | "active" = "standard", useStandardColors = true) {
+    // Standard colours (the palette) come first and are stored as "@Name"; without a palette the
+    // fixed presets are used.
+    const palette = useStandardColors ? getColorPalette() : [];
+    const presets: Array<readonly [string, string, string]> = palette.length
+        ? palette.map((entry) => [entry.hex, entry.name, "@" + entry.name] as const)
+        : COLOR_PRESETS.map(([hex, name]) => {
+            const shown = tone === "active" ? activeCardColor(hex) : hex;
+            return [shown, name, shown] as const;
+        });
     const grid = document.createElement("div");
     grid.className = "sp-card-color-presets";
     grid.setAttribute("role", "group");
@@ -56,12 +64,12 @@ export function createColorSwatches(value: string | (() => string), onChange: (h
         onChange(customColor);
     });
 
-    function createSwatch(hex: string, name: string) {
+    function createSwatch(hex: string, name: string, stored: string) {
         const swatch = document.createElement("button");
         swatch.type = "button";
         swatch.className = "sp-card-color-preset";
         swatch.title = name + " (#" + hex + ")";
-        swatch.setAttribute("data-color", hex);
+        swatch.setAttribute("data-color", stored);
         swatch.setAttribute("aria-label", "Set colour to " + name.toLowerCase());
         swatch.style.backgroundColor = "#" + hex;
         swatch.style.color = cardPreviewTextColor(hex);
@@ -71,18 +79,20 @@ export function createColorSwatches(value: string | (() => string), onChange: (h
         check.setAttribute("aria-hidden", "true");
         swatch.appendChild(check);
         swatch.addEventListener("click", () => {
-            syncColor(hex);
-            onChange(hex);
+            syncColor(stored);
+            onChange(stored);
         });
         return swatch;
     }
 
     function syncColor(nextValue?: string) {
         const currentValue = nextValue ?? (typeof value === "function" ? value() : value);
-        const selected = currentValue.trim().replace(/^#/, "").toUpperCase();
+        const trimmed = currentValue.trim();
+        const isRef = isColorRef(trimmed);
+        const selected = isRef ? trimmed : trimmed.replace(/^#/, "").toUpperCase();
         selectedColor = selected;
         const valid = /^[0-9A-F]{6}$/.test(selected);
-        const customSelected = valid && !presets.some(([hex]) => hex === selected);
+        const customSelected = valid && !presets.some(([hex, , stored]) => hex === selected || stored === selected);
         if (customSelected) customColor = selected;
         picker.value = "#" + (customColor || (valid ? selected : "000000"));
         customSwatch.title = "Choose custom colour" + (customColor ? " (#" + customColor + ")" : "");
@@ -91,11 +101,12 @@ export function createColorSwatches(value: string | (() => string), onChange: (h
         customSwatch.style.backgroundColor = customColor ? "#" + customColor : "transparent";
         customSwatch.style.color = customColor ? cardPreviewTextColor(customColor) : "";
         for (const swatch of Array.from(grid.querySelectorAll("button"))) {
-            swatch.setAttribute("aria-pressed", String(swatch.getAttribute("data-color") === selected));
+            const stored = swatch.getAttribute("data-color") || "";
+            swatch.setAttribute("aria-pressed", String(isRef ? stored.toLowerCase() === selected.toLowerCase() : stored === selected));
         }
     }
 
-    for (const [hex, name] of presets) grid.appendChild(createSwatch(hex, name));
+    for (const [hex, name, stored] of presets) grid.appendChild(createSwatch(hex, name, stored));
     grid.appendChild(customSwatch);
     syncColor();
     return Object.assign(grid, { _syncColor: syncColor });

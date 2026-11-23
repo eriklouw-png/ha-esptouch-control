@@ -551,6 +551,15 @@ export const ENTITY_CATALOG = {
         "card_alignment_select"
       ]
     },
+    "screen_color_palette": {
+      "domain": "text",
+      "name": "Screen: Color Palette",
+      "objectIds": [
+        "screen__color_palette",
+        "screen_color_palette",
+        "color_palette_text"
+      ]
+    },
     "screen_label_size": {
       "domain": "select",
       "name": "Screen: Label Size",
@@ -894,6 +903,7 @@ export const ENTITY_CATALOG = {
       "screen_card_curve",
       "screen_card_spacing",
       "screen_card_alignment",
+      "screen_color_palette",
       "screen_label_size",
       "screen_theme_auto_method",
       "screen_theme_light_start",

@@ -28,7 +28,7 @@ export function createInitialState(deviceConfig: DeviceConfig): AppState {
   const grid = Array.from({ length: deviceConfig.slots }, () => 0);
   const buttons = Array.from({ length: deviceConfig.slots }, emptyCardConfig);
   return {
-    grid, sizes: {}, buttons, onColor: WEB_UI_COLORS.primary, cardCurve: "Medium", cardCurveSupported: false, cardAlignment: "Left", cardAlignmentSupported: false, cardGap: 8, cardGapSupported: false, labelSize: "Medium", labelSizeSupported: false,
+    grid, sizes: {}, buttons, onColor: WEB_UI_COLORS.primary, cardCurve: "Medium", cardCurveSupported: false, cardAlignment: "Left", cardAlignmentSupported: false, colorPalette: "", colorPaletteSupported: false, cardGap: 8, cardGapSupported: false, labelSize: "Medium", labelSizeSupported: false,
     selectedSlots: [], lastClickedSlot: -1, clockBarSelectedItem: "", activeTab: "screen",
     _indoorOn: false, _outdoorOn: false, _indoorVal: null, _outdoorVal: null,
     indoorEntity: "", outdoorEntity: "", clockBarTemperatureEntities: [],

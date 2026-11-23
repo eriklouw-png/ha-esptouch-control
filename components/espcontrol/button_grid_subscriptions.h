@@ -507,7 +507,7 @@ inline std::vector<ActionCardLook> parse_action_card_looks(const std::string &sp
     look.state = parts[0];
     if (look.state.empty()) continue;
     if (!parts[1].empty() && parts[1] != "Auto") look.icon = find_icon(parts[1].c_str());
-    std::string hex = parts[2];
+    std::string hex = resolve_color_ref(parts[2]);
     if (!hex.empty() && hex[0] == '#') hex.erase(0, 1);
     if (hex.size() == 6) {
       char *tail = nullptr;

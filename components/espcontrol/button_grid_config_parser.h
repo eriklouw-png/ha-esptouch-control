@@ -180,6 +180,7 @@ inline std::string cfg_option_value(const std::string &options, const char *name
 }
 
 inline std::string normalize_card_color_value(std::string value) {
+  if (value.size() >= 2 && value[0] == '@') return value;  // palette reference
   if (!value.empty() && value[0] == '#') value.erase(0, 1);
   if (value.size() != 6) return "";
   for (char &ch : value) {

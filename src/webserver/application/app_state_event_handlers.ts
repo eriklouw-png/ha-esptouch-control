@@ -36,7 +36,8 @@ import {
     parseThemeSunOffset,
 } from "../model/settings";
 import { syncThemeSettingsUi } from "./theme_settings_ui";
-import { syncCardCurveUi, syncCardStyleExtrasUi } from "./card_curve_ui";
+import { syncCardCurveUi, syncCardStyleExtrasUi, syncColorPaletteUi } from "./card_curve_ui";
+import { setColorPalette } from "../model/config_primitives";
 import { normalizeCardAlignment, normalizeCardCurve, normalizeCardGap, normalizeLabelSize } from "../model/settings";
 import type { UiRuntimeState } from "./state";
 import type { CoreFeature } from "./core";
@@ -448,6 +449,13 @@ export function createAppStateEventHandlersFeature(
                 state.cardCurveSupported = true;
                 syncCardCurveUi(state, runtime);
                 syncPreviewOrientation(true);
+                renderPreview();
+            },
+            "text-screen__color_palette": function (this: any, val?: any, d?: any) {
+                state.colorPalette = String(d && d.value !== undefined ? d.value : val || "");
+                state.colorPaletteSupported = true;
+                setColorPalette(state.colorPalette);
+                syncColorPaletteUi(state, runtime);
                 renderPreview();
             },
             "select-screen__card_alignment": function (this: any, val?: any, d?: any) {

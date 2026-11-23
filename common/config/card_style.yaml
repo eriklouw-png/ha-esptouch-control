@@ -14,6 +14,29 @@
 # font_text_body_large.
 # =============================================================================
 
+# Standard colours "Name=RRGGBB;Name=RRGGBB". A card colour written as "@Name" follows this list.
+text:
+  - platform: template
+    name: "${entity_screen_color_palette}"
+    id: color_palette_text
+    entity_category: config
+    icon: "mdi:palette"
+    optimistic: true
+    restore_value: true
+    initial_value: "Aan=FF8C00;Uit=313131;Geel=FFB300;Groen=66BB6A;Blauw=1E88E5;Lichtblauw=4FC3F7;Rood=E64A19;Paars=8F28AB;Grijs=7B797F"
+    min_length: 0
+    max_length: 255
+    mode: text
+    web_server:
+      sorting_group_id: sg_display
+    on_value:
+      then:
+        - if:
+            condition:
+              lambda: 'return grid_phase2_complete();'
+            then:
+              - script.execute: refresh_subpage_grid
+
 number:
   - platform: template
     name: "${entity_screen_card_spacing}"
