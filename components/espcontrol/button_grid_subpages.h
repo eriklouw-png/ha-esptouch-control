@@ -548,6 +548,25 @@ inline void subscribe_climate_subpage_parent_indicator(
   );
 }
 
+// A subpage can have its own grid size: a "G3x4" token anywhere in its order (it takes no cell).
+inline bool subpage_size_token(const std::string &order_str, size_t start, size_t end, int &cols, int &rows) {
+  while (start < end && std::isspace(static_cast<unsigned char>(order_str[start]))) start++;
+  while (end > start && std::isspace(static_cast<unsigned char>(order_str[end - 1]))) end--;
+  if (end - start < 4 || order_str[start] != 'G') return false;
+  return grid_size_parse(order_str.substr(start + 1, end - start - 1), cols, rows);
+}
+
+inline bool subpage_order_grid_size(const std::string &order_str, int &cols, int &rows) {
+  size_t start = 0;
+  while (start <= order_str.length()) {
+    size_t comma = order_str.find(',', start);
+    if (comma == std::string::npos) comma = order_str.length();
+    if (subpage_size_token(order_str, start, comma, cols, rows)) return true;
+    start = comma + 1;
+  }
+  return false;
+}
+
 // Parse subpage order CSV; "B"/"Bd"/"Bw"/"Bb"/"Bt"/"Bx" tokens mark the back button position
 inline void parse_subpage_order(const std::string &order_str, int num_slots, int num_btns,
                                 SubpageOrder &result) {
@@ -562,6 +581,11 @@ inline void parse_subpage_order(const std::string &order_str, int num_slots, int
   while (st2 <= order_str.length() && gp2 < (size_t)slot_limit) {
     size_t cm = order_str.find(',', st2);
     if (cm == std::string::npos) cm = order_str.length();
+    int size_cols = 0, size_rows = 0;
+    if (cm > st2 && subpage_size_token(order_str, st2, cm, size_cols, size_rows)) {
+      st2 = cm + 1;  // a size token takes no cell
+      continue;
+    }
     if (cm > st2) {
       char back_suffix = '\0';
       if (subpage_back_token_span(order_str, st2, cm, back_suffix)) {

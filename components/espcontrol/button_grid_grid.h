@@ -1247,6 +1247,38 @@ inline std::string optional_text_state(esphome::text::Text **configs, int index)
   return (configs != nullptr && configs[index] != nullptr) ? configs[index]->state : "";
 }
 
+// Grid descriptors for subpages (each subpage may have its own column/row count).
+struct SubpageGridDscEntry {
+  int cols = 0;
+  int rows = 0;
+  lv_coord_t col_dsc[MAX_GRID_SLOTS + 1];
+  lv_coord_t row_dsc[MAX_GRID_SLOTS + 1];
+};
+
+inline void subpage_grid_dsc(int cols, int rows, const lv_coord_t *&col_dsc, const lv_coord_t *&row_dsc) {
+  static SubpageGridDscEntry table[8];
+  if (cols < 1) cols = 1;
+  if (rows < 1) rows = 1;
+  if (cols > MAX_GRID_SLOTS) cols = MAX_GRID_SLOTS;
+  if (rows > MAX_GRID_SLOTS) rows = MAX_GRID_SLOTS;
+  SubpageGridDscEntry *use = nullptr;
+  for (auto &entry : table) {
+    if (entry.cols == cols && entry.rows == rows) { use = &entry; break; }
+    if (entry.cols == 0 && use == nullptr) use = &entry;
+  }
+  if (use == nullptr) use = &table[0];  // more than eight different sizes: reuse (never happens with the web editor)
+  if (use->cols != cols || use->rows != rows) {
+    use->cols = cols;
+    use->rows = rows;
+    for (int i = 0; i < cols; i++) use->col_dsc[i] = LV_GRID_FR(1);
+    use->col_dsc[cols] = LV_GRID_TEMPLATE_LAST;
+    for (int i = 0; i < rows; i++) use->row_dsc[i] = LV_GRID_FR(1);
+    use->row_dsc[rows] = LV_GRID_TEMPLATE_LAST;
+  }
+  col_dsc = use->col_dsc;
+  row_dsc = use->row_dsc;
+}
+
 // Moving a card changes only the saved order, not the card itself. Keep the
 // existing LVGL widgets and their Home Assistant callbacks alive, and update
 // just their grid cells. Structural card edits are applied on the next normal
@@ -1266,12 +1298,6 @@ inline bool grid_refresh_subpage_layouts(
   const int COLS = cfg.cols > 0 ? cfg.cols : 1;
   const int ROWS = (NS + COLS - 1) / COLS;
   const DisplayProfile display = display_profile_from_grid_config(cfg);
-  static lv_coord_t subpage_cols[MAX_GRID_SLOTS + 1];
-  static lv_coord_t subpage_rows[MAX_GRID_SLOTS + 1];
-  for (int i = 0; i < COLS; i++) subpage_cols[i] = LV_GRID_FR(1);
-  subpage_cols[COLS] = LV_GRID_TEMPLATE_LAST;
-  for (int i = 0; i < ROWS; i++) subpage_rows[i] = LV_GRID_FR(1);
-  subpage_rows[ROWS] = LV_GRID_TEMPLATE_LAST;
 
   bool refreshed = false;
   for (int si = 0; si < NS; si++) {
@@ -1302,16 +1328,27 @@ inline bool grid_refresh_subpage_layouts(
     }
 
     const std::string order = get_subpage_order(sp_cfg);
+    // A subpage may have its own grid size (a "G3x4" token in its order).
+    int SP_COLS = COLS, SP_ROWS = ROWS, SP_NS = NS;
+    {
+      int size_cols = 0, size_rows = 0;
+      if (subpage_order_grid_size(order, size_cols, size_rows) && size_cols * size_rows <= MAX_GRID_SLOTS) {
+        SP_COLS = size_cols; SP_ROWS = size_rows; SP_NS = size_cols * size_rows;
+      }
+    }
+    const lv_coord_t *sub_col_dsc = nullptr, *sub_row_dsc = nullptr;
+    subpage_grid_dsc(SP_COLS, SP_ROWS, sub_col_dsc, sub_row_dsc);
+
     SubpageOrder sp_order;
-    parse_subpage_order(order, NS, sp_btns.size(), sp_order);
-    normalize_subpage_order_spans(sp_order, NS, COLS);
+    parse_subpage_order(order, SP_NS, sp_btns.size(), sp_order);
+    normalize_subpage_order_spans(sp_order, SP_NS, SP_COLS);
 
     // Binding a card to another entity/type requires new HA callbacks. Keep
     // the existing data-bound widgets intact and defer that structural edit to
     // a normal rebuild rather than moving a card that still controls its old
     // entity. Pure order and span changes continue to update in place.
     bool structural_change = false;
-    for (int gp = 0; gp < NS; gp++) {
+    for (int gp = 0; gp < SP_NS; gp++) {
       const int button_index = sp_order.positions[gp];
       if (button_index < 1 || button_index > static_cast<int>(sp_btns.size())) continue;
       NavigationSubpageEntry::Card *card = navigation_subpage_card(*entry, button_index);
@@ -1328,7 +1365,7 @@ inline bool grid_refresh_subpage_layouts(
 
     // Change the descriptor only when the preserved cards will be repositioned
     // below. A deferred structural edit must keep its current grid intact.
-    lv_obj_set_grid_dsc_array(entry->screen, subpage_cols, subpage_rows);
+    lv_obj_set_grid_dsc_array(entry->screen, const_cast<lv_coord_t *>(sub_col_dsc), const_cast<lv_coord_t *>(sub_row_dsc));
     entry->back_neutral_background = apply_subpage_back_colors(entry->back_button, order, display);
     const std::string back_label = get_subpage_back_label(order);
     if (entry->back_slot.text_lbl != nullptr) {
@@ -1336,8 +1373,8 @@ inline bool grid_refresh_subpage_layouts(
     }
     set_grid_card_cell(
       entry->back_button, entry->screen,
-      sp_order.back_pos % COLS, sp_order.back_pos / COLS,
-      sp_order.back_col_span, sp_order.back_row_span, COLS, ROWS);
+      sp_order.back_pos % SP_COLS, sp_order.back_pos / SP_COLS,
+      sp_order.back_col_span, sp_order.back_row_span, SP_COLS, SP_ROWS);
     apply_card_label_line_clamp(entry->back_slot.text_lbl, cfg,
                                 sp_order.back_row_span);
     configure_button_label_wrap(entry->back_slot.text_lbl);
@@ -1345,7 +1382,7 @@ inline bool grid_refresh_subpage_layouts(
     // Preserve card instances (and their HA subscriptions), but hide cards
     // removed from the saved order so stale content is never left visible.
     bool visible_cards[MAX_GRID_SLOTS] = {};
-    for (int gp = 0; gp < NS; gp++) {
+    for (int gp = 0; gp < SP_NS; gp++) {
       const int button_index = sp_order.positions[gp];
       if (button_index >= 1 &&
           button_index <= static_cast<int>(sp_btns.size()) &&
@@ -1366,7 +1403,7 @@ inline bool grid_refresh_subpage_layouts(
       }
     }
 
-    for (int gp = 0; gp < NS; gp++) {
+    for (int gp = 0; gp < SP_NS; gp++) {
       const int button_index = sp_order.positions[gp];
       if (button_index < 1 || button_index > static_cast<int>(sp_btns.size())) continue;
       NavigationSubpageEntry::Card *card = navigation_subpage_card(*entry, button_index);
@@ -1375,13 +1412,13 @@ inline bool grid_refresh_subpage_layouts(
         continue;
       }
       card->display_order = gp;
-      const int col = sp_order.has_back_token ? gp % COLS : (gp + 1) % COLS;
-      const int row = sp_order.has_back_token ? gp / COLS : (gp + 1) / COLS;
+      const int col = sp_order.has_back_token ? gp % SP_COLS : (gp + 1) % SP_COLS;
+      const int row = sp_order.has_back_token ? gp / SP_COLS : (gp + 1) / SP_COLS;
       const int col_span = sp_order.col_span[button_index - 1] > 0
         ? sp_order.col_span[button_index - 1] : 1;
       const int row_span = sp_order.row_span[button_index - 1] > 0
         ? sp_order.row_span[button_index - 1] : 1;
-      set_grid_card_cell(card->button, entry->screen, col, row, col_span, row_span, COLS, ROWS);
+      set_grid_card_cell(card->button, entry->screen, col, row, col_span, row_span, SP_COLS, SP_ROWS);
       const ParsedCfg button_config =
         parsed_cfg_from_subpage_btn(sp_btns[button_index - 1]);
       const auto context = card_runtime_context(
@@ -2114,12 +2151,6 @@ inline void grid_phase2(
   }
 
   // --- Subpage creation ---
-  static lv_coord_t sp_col_dsc[MAX_GRID_SLOTS + 1];
-  for (int i = 0; i < COLS; i++) sp_col_dsc[i] = LV_GRID_FR(1);
-  sp_col_dsc[COLS] = LV_GRID_TEMPLATE_LAST;
-  static lv_coord_t sp_row_dsc[MAX_GRID_SLOTS + 1];
-  for (int i = 0; i < ROWS; i++) sp_row_dsc[i] = LV_GRID_FR(1);
-  sp_row_dsc[ROWS] = LV_GRID_TEMPLATE_LAST;
 
   const lv_font_t *sp_icon_fnt = lv_obj_get_style_text_font(slots[0].icon_lbl, LV_PART_MAIN);
 
@@ -2163,9 +2194,20 @@ inline void grid_phase2(
     std::string sp_order_str = get_subpage_order(sp_cfg);
     std::string sp_back_label = get_subpage_back_label(sp_order_str);
 
+    // A subpage may have its own grid size (a "G3x4" token in its order).
+    int SP_COLS = COLS, SP_ROWS = ROWS, SP_NS = NS;
+    {
+      int size_cols = 0, size_rows = 0;
+      if (subpage_order_grid_size(sp_order_str, size_cols, size_rows) && size_cols * size_rows <= MAX_GRID_SLOTS) {
+        SP_COLS = size_cols; SP_ROWS = size_rows; SP_NS = size_cols * size_rows;
+      }
+    }
+    const lv_coord_t *sub_col_dsc = nullptr, *sub_row_dsc = nullptr;
+    subpage_grid_dsc(SP_COLS, SP_ROWS, sub_col_dsc, sub_row_dsc);
+
     SubpageOrder sp_ord;
-    parse_subpage_order(sp_order_str, NS, sp_btns.size(), sp_ord);
-    normalize_subpage_order_spans(sp_ord, NS, COLS);
+    parse_subpage_order(sp_order_str, SP_NS, sp_btns.size(), sp_ord);
+    normalize_subpage_order_spans(sp_ord, SP_NS, SP_COLS);
 
     lv_obj_t *sub_scr = lv_obj_create(NULL);
     int display_order = NS;
@@ -2181,7 +2223,7 @@ inline void grid_phase2(
     lv_obj_set_style_bg_color(sub_scr, lv_obj_get_style_bg_color(main_page_obj, LV_PART_MAIN), LV_PART_MAIN);
     lv_obj_set_style_bg_opa(sub_scr, LV_OPA_COVER, LV_PART_MAIN);
     lv_obj_set_layout(sub_scr, LV_LAYOUT_GRID);
-    lv_obj_set_grid_dsc_array(sub_scr, sp_col_dsc, sp_row_dsc);
+    lv_obj_set_grid_dsc_array(sub_scr, const_cast<lv_coord_t *>(sub_col_dsc), const_cast<lv_coord_t *>(sub_row_dsc));
     lv_obj_set_style_pad_top(sub_scr, mp_pad_top, LV_PART_MAIN);
     lv_obj_set_style_pad_bottom(sub_scr, mp_pad_bottom, LV_PART_MAIN);
     lv_obj_set_style_pad_left(sub_scr, mp_pad_left, LV_PART_MAIN);
@@ -2195,9 +2237,9 @@ inline void grid_phase2(
       sub_scr, sp_radius, sp_pad, sp_btn_fnt, sp_txt_color, cfg.continuous_card_corners);
     set_grid_card_cell(
       back_btn, sub_scr,
-      sp_ord.back_pos % COLS, sp_ord.back_pos / COLS,
+      sp_ord.back_pos % SP_COLS, sp_ord.back_pos / SP_COLS,
       sp_ord.back_col_span, sp_ord.back_row_span,
-      COLS, ROWS);
+      SP_COLS, SP_ROWS);
     BtnSlot back_slot = create_dynamic_card_slot(
       back_btn, sp_icon_fnt, display_sensor_font(display), sp_btn_fnt, sp_txt_color,
       cfg.subpage_chevron_font);
@@ -2245,7 +2287,7 @@ inline void grid_phase2(
       }
     };
 
-    for (int gp = 0; gp < NS; gp++) {
+    for (int gp = 0; gp < SP_NS; gp++) {
       int bn = sp_ord.positions[gp];
       if (bn < 1 || bn > (int)sp_btns.size()) continue;
       auto &sb = sp_btns[bn - 1];
@@ -2254,14 +2296,14 @@ inline void grid_phase2(
           sb_cfg, espcontrol::cards::Surface::SUBPAGE);
       const CardPalette card_palette = card_palette_for_config(palette, sb_cfg, display);
       int col, row;
-      if (sp_ord.has_back_token) { col = gp % COLS; row = gp / COLS; }
-      else { int op = gp + 1; col = op % COLS; row = op / COLS; }
+      if (sp_ord.has_back_token) { col = gp % SP_COLS; row = gp / SP_COLS; }
+      else { int op = gp + 1; col = op % SP_COLS; row = op / SP_COLS; }
       int rs = sp_ord.row_span[bn - 1] > 0 ? sp_ord.row_span[bn - 1] : 1;
 
       lv_obj_t *sb_btn = create_grid_card_button(
         sub_scr, sp_radius, sp_pad, sp_btn_fnt, sp_txt_color, cfg.continuous_card_corners);
       int cs = sp_ord.col_span[bn - 1] > 0 ? sp_ord.col_span[bn - 1] : 1;
-      set_grid_card_cell(sb_btn, sub_scr, col, row, cs, rs, COLS, ROWS);
+      set_grid_card_cell(sb_btn, sub_scr, col, row, cs, rs, SP_COLS, SP_ROWS);
       BtnSlot sub_slot = create_dynamic_card_slot(
         sb_btn, sp_icon_fnt, display_sensor_font(display), sp_btn_fnt, sp_txt_color,
         cfg.subpage_chevron_font);
@@ -2303,7 +2345,7 @@ inline void grid_phase2(
       if (espcontrol::cards::climate_control_driver_bind_subpage(
             sub_slot, sb_cfg, context, climate_control_environment)) continue;
       auto alarm_environment = espcontrol::cards::alarm_driver_environment(
-        card_palette, display, sub_slot, cfg, sub_scr, NS, COLS);
+        card_palette, display, sub_slot, cfg, sub_scr, SP_NS, SP_COLS);
       alarm_environment.parent_config = &p;
       alarm_environment.add_parent_indicator =
         [&](const std::string &entity_id) { add_parent_indicator(entity_id); };
@@ -2333,7 +2375,7 @@ inline void grid_phase2(
       action_environment.palette = card_palette;
       action_environment.display = display;
       action_environment.grid_page = sub_scr;
-      action_environment.grid_cols = COLS;
+      action_environment.grid_cols = SP_COLS;
       action_environment.add_parent_indicator =
         [&](const std::string &entity_id) { add_parent_indicator(entity_id); };
       action_environment.parent_indicator_enabled =
