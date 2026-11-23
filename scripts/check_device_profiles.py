@@ -325,7 +325,13 @@ def test_generated_yaml(profiles: dict[str, dict]) -> None:
         assert f'device_slug: "{slug}"' in package, f"{slug}: packages.yaml missing device slug"
         assert f'firmware_manifest_slug: "{slug}"' in package, f"{slug}: packages.yaml missing manifest slug"
         portrait_slots = profile["layout"].get("portraitSlots")
-        if portrait_slots is None:
+        grid_sizes = profile["layout"].get("gridSizes")
+        if grid_sizes:
+            default_cols, default_rows = (int(part) for part in profile["layout"]["defaultGrid"].split("x"))
+            assert f"cfg.num_slots = {default_cols * default_rows};" in sensors, f"{slug}: sensors.yaml missing default grid slot count"
+            assert "grid_size_parse(id(grid_size_select).current_option()" in sensors, f"{slug}: sensors.yaml missing Screen: Grid Size"
+            assert f"hide < {profile['slots']}" in sensors, f"{slug}: sensors.yaml must hide slots outside the chosen grid"
+        elif portrait_slots is None:
             assert f"cfg.num_slots = {profile['slots']};" in sensors, f"{slug}: sensors.yaml missing slot count"
         else:
             assert f"cfg.num_slots = portrait ? {portrait_slots} : {profile['slots']};" in sensors, (

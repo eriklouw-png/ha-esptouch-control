@@ -456,6 +456,11 @@ export function createAppStateEventHandlersFeature(
                 syncPreviewOrientation(true);
                 renderPreview();
             },
+            "select-screen__grid_size": function (this: any, val?: any, d?: any) {
+                state.gridSize = String(d && d.value !== undefined ? d.value : val || "Default") || "Default";
+                syncPreviewOrientation(true);
+                renderPreview();
+            },
             "text-wifi__network_1": function (this: any, val?: any, d?: any) { setWifiNetwork(0, d, val); },
             "text-wifi__network_2": function (this: any, val?: any, d?: any) { setWifiNetwork(1, d, val); },
             "text-wifi__network_3": function (this: any, val?: any, d?: any) { setWifiNetwork(2, d, val); },

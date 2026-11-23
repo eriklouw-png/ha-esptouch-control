@@ -347,8 +347,13 @@ def cfg_lines(device: dict) -> list[str]:
     lines = [
         "            GridConfig cfg = {};",
     ]
+    grid_sizes = device.get("grid_sizes")
     if "portrait_slots" not in device:
-        lines.append(f"            cfg.num_slots = {device['slots']};")
+        if grid_sizes:
+            default_cols, default_rows = (int(part) for part in device["default_grid"].split("x"))
+            lines.append(f"            cfg.num_slots = {default_cols * default_rows};")
+        else:
+            lines.append(f"            cfg.num_slots = {device['slots']};")
     if "portrait_cols" in device:
         lines.append('            bool portrait = id(screen_rotation_select).current_option() == "90" || id(screen_rotation_select).current_option() == "270";')
         lines.append(f"            cfg.cols = portrait ? {device['portrait_cols']} : {device['cols']};")
@@ -362,7 +367,24 @@ def cfg_lines(device: dict) -> list[str]:
         if device.get("rotate_width_compensation", False):
             lines.append("            cfg.width_compensation_vertical = portrait;")
     else:
-        lines.append(f"            cfg.cols = {device['cols']};")
+        if grid_sizes:
+            lines.append(f"            cfg.cols = {int(device['default_grid'].split('x')[0])};")
+        else:
+            lines.append(f"            cfg.cols = {device['cols']};")
+    if grid_sizes and device["package"].get("cardStyleControls", False):
+        # Screen: Grid Size. "Default" keeps the device's own grid; the slots that fall outside
+        # the chosen grid keep their saved configuration but are not shown.
+        lines.extend([
+            "            {",
+            "              int size_cols = 0, size_rows = 0;",
+            "              if (grid_size_parse(id(grid_size_select).current_option(), size_cols, size_rows) &&",
+            f"                  size_cols <= {device['cols']} && size_rows <= {device['rows']}) {{",
+            "                cfg.cols = size_cols;",
+            "                cfg.num_slots = size_cols * size_rows;",
+            "              }",
+            f"              for (int hide = cfg.num_slots; hide < {device['slots']}; hide++) lv_obj_add_flag(slots[hide].btn, LV_OBJ_FLAG_HIDDEN);",
+            "            }",
+        ])
     lines.append("            cfg.subpage_chevrons_enabled = id(subpage_chevrons_enabled).state;")
     base_radius = int(device["package"]["substitutions"]["radius"].removesuffix("px"))
     substitutions = device["package"]["substitutions"]

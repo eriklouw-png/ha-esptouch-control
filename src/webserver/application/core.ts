@@ -45,10 +45,29 @@ export function createCoreFeature(
         value = String(value == null ? "0" : value);
         return value === "90" || value === "270";
     }
+    // Screen: Grid Size. The device config describes the largest grid; the chosen size ("3x4", or
+    // "Default" for the panel's own grid) decides how many columns, rows and slots are shown.
+    function chosenGridSize(this: any) {
+        var features: any = applicationLayout.config.features;
+        var sizes: any = features && features.gridSizes;
+        if (!sizes || !sizes.length)
+            return "";
+        var wanted: any = state.gridSize === "Default" ? features.gridDefault : state.gridSize;
+        return sizes.indexOf(wanted) >= 0 ? wanted : features.gridDefault;
+    }
     function activeLayout(this: any) {
+        var base: any = applicationLayout.config;
         if (isPortraitRotation(state.screenRotation) && applicationLayout.config.portrait)
-            return applicationLayout.config.portrait;
-        return applicationLayout.config;
+            base = applicationLayout.config.portrait;
+        var size: any = chosenGridSize();
+        var parts: any = size ? String(size).split("x") : null;
+        if (parts && parts.length === 2) {
+            var cols: any = parseInt(parts[0], 10);
+            var rows: any = parseInt(parts[1], 10);
+            if (cols > 0 && rows > 0)
+                return Object.assign({}, base, { cols: cols, rows: rows, slots: cols * rows });
+        }
+        return base;
     }
     function screenWidthPercent(this: any, screen?: any) {
         var width: any = screen && screen.width;

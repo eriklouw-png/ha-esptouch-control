@@ -62,6 +62,32 @@ number:
               - script.execute: refresh_subpage_grid
 
 select:
+  # Screen: Grid Size. "Default" is the panel's own grid; the others only apply on panels that
+  # have slots for them (the web page offers just those).
+  - platform: template
+    name: "${entity_screen_grid_size}"
+    id: grid_size_select
+    entity_category: config
+    icon: "mdi:view-grid"
+    optimistic: true
+    restore_value: true
+    initial_option: "Default"
+    options:
+      - "Default"
+      - "2x3"
+      - "3x3"
+      - "3x4"
+      - "4x4"
+    web_server:
+      sorting_group_id: sg_display
+    on_value:
+      then:
+        - if:
+            condition:
+              lambda: 'return grid_phase2_complete();'
+            then:
+              - script.execute: refresh_subpage_grid
+
   - platform: template
     name: "${entity_screen_card_alignment}"
     id: card_alignment_select

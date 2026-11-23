@@ -95,6 +95,7 @@
     { "key": "wifi_password_5", "domain": "text", "name": "WiFi: Password 5", "objectIds": ["wifi__password_5", "wifi_password_5", "wifi_pw_5"], "groups": ["settings"] },
     { "key": "wifi_network_order", "domain": "text", "name": "WiFi: Network Order", "objectIds": ["wifi__network_order", "wifi_network_order", "wifi_net_order"], "groups": ["settings"] },
     { "key": "wifi_networks_apply", "domain": "button", "name": "WiFi: Apply Networks", "objectIds": ["wifi__apply_networks", "wifi_networks_apply", "wifi_networks_apply_button"], "groups": ["settings"] },
+    { "key": "screen_grid_size", "domain": "select", "name": "Screen: Grid Size", "objectIds": ["screen__grid_size", "screen_grid_size", "grid_size_select"], "groups": ["settings"] },
     { "key": "screen_color_palette", "domain": "text", "name": "Screen: Color Palette", "objectIds": ["screen__color_palette", "screen_color_palette", "color_palette_text"], "groups": ["settings"] },
     { "key": "screen_label_size", "domain": "select", "name": "Screen: Label Size", "objectIds": ["screen__label_size", "screen_label_size", "label_size_select"], "groups": ["settings"] },
     { "key": "screen_theme_auto_method", "domain": "select", "name": "Screen: Theme Auto Method", "groups": ["settings"] },

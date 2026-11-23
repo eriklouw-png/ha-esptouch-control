@@ -106,6 +106,7 @@ substitutions:
   entity_wifi_password_5: "WiFi: Password 5"
   entity_wifi_network_order: "WiFi: Network Order"
   entity_wifi_networks_apply: "WiFi: Apply Networks"
+  entity_screen_grid_size: "Screen: Grid Size"
   entity_screen_color_palette: "Screen: Color Palette"
   entity_screen_label_size: "Screen: Label Size"
   entity_screen_theme_auto_method: "Screen: Theme Auto Method"

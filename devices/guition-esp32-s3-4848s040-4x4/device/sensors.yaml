@@ -55,6 +55,15 @@ script:
           GridConfig cfg = {};
           cfg.num_slots = 16;
           cfg.cols = 4;
+          {
+            int size_cols = 0, size_rows = 0;
+            if (grid_size_parse(id(grid_size_select).current_option(), size_cols, size_rows) &&
+                size_cols <= 4 && size_rows <= 4) {
+              cfg.cols = size_cols;
+              cfg.num_slots = size_cols * size_rows;
+            }
+            for (int hide = cfg.num_slots; hide < 16; hide++) lv_obj_add_flag(slots[hide].btn, LV_OBJ_FLAG_HIDDEN);
+          }
           cfg.subpage_chevrons_enabled = id(subpage_chevrons_enabled).state;
           cfg.card_corner_radius = card_curve_radius(26, id(card_curve_select).current_option(), 16, 21);
           {
@@ -213,6 +222,15 @@ script:
           GridConfig cfg = {};
           cfg.num_slots = 16;
           cfg.cols = 4;
+          {
+            int size_cols = 0, size_rows = 0;
+            if (grid_size_parse(id(grid_size_select).current_option(), size_cols, size_rows) &&
+                size_cols <= 4 && size_rows <= 4) {
+              cfg.cols = size_cols;
+              cfg.num_slots = size_cols * size_rows;
+            }
+            for (int hide = cfg.num_slots; hide < 16; hide++) lv_obj_add_flag(slots[hide].btn, LV_OBJ_FLAG_HIDDEN);
+          }
           cfg.subpage_chevrons_enabled = id(subpage_chevrons_enabled).state;
           cfg.card_corner_radius = card_curve_radius(26, id(card_curve_select).current_option(), 16, 21);
           {
@@ -410,6 +428,15 @@ esphome:
             GridConfig cfg = {};
             cfg.num_slots = 16;
             cfg.cols = 4;
+            {
+              int size_cols = 0, size_rows = 0;
+              if (grid_size_parse(id(grid_size_select).current_option(), size_cols, size_rows) &&
+                  size_cols <= 4 && size_rows <= 4) {
+                cfg.cols = size_cols;
+                cfg.num_slots = size_cols * size_rows;
+              }
+              for (int hide = cfg.num_slots; hide < 16; hide++) lv_obj_add_flag(slots[hide].btn, LV_OBJ_FLAG_HIDDEN);
+            }
             cfg.subpage_chevrons_enabled = id(subpage_chevrons_enabled).state;
             cfg.card_corner_radius = card_curve_radius(26, id(card_curve_select).current_option(), 16, 21);
             {
@@ -559,6 +586,15 @@ esphome:
             GridConfig cfg = {};
             cfg.num_slots = 16;
             cfg.cols = 4;
+            {
+              int size_cols = 0, size_rows = 0;
+              if (grid_size_parse(id(grid_size_select).current_option(), size_cols, size_rows) &&
+                  size_cols <= 4 && size_rows <= 4) {
+                cfg.cols = size_cols;
+                cfg.num_slots = size_cols * size_rows;
+              }
+              for (int hide = cfg.num_slots; hide < 16; hide++) lv_obj_add_flag(slots[hide].btn, LV_OBJ_FLAG_HIDDEN);
+            }
             cfg.subpage_chevrons_enabled = id(subpage_chevrons_enabled).state;
             cfg.card_corner_radius = card_curve_radius(26, id(card_curve_select).current_option(), 16, 21);
             {

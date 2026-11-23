@@ -19,7 +19,12 @@
     "layout": {
       "cols": 4,
       "rows": 4,
-      "firmwareGrid": "4x4"
+      "firmwareGrid": "4x4",
+      "defaultGrid": "4x4",
+      "gridSizes": [
+        "3x3",
+        "4x4"
+      ]
     },
     "rotation": {
       "enabled": true,

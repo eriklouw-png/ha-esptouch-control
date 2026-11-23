@@ -508,3 +508,22 @@ inline void set_subpage_chevron_visible(BtnSlot &s, bool visible,
   lv_obj_add_flag(s.subpage_lbl, LV_OBJ_FLAG_HIDDEN);
   if (s.text_lbl) configure_button_label_wrap(s.text_lbl);
 }
+
+// "3x4" -> columns 3, rows 4 (the Screen: Grid Size setting). "Default" and anything else: false.
+inline bool grid_size_parse(const std::string &size, int &cols, int &rows) {
+  const size_t x = size.find('x');
+  if (x == std::string::npos || x == 0 || x + 1 >= size.size()) return false;
+  int parsed_cols = 0, parsed_rows = 0;
+  for (size_t i = 0; i < x; i++) {
+    if (size[i] < '0' || size[i] > '9') return false;
+    parsed_cols = parsed_cols * 10 + (size[i] - '0');
+  }
+  for (size_t i = x + 1; i < size.size(); i++) {
+    if (size[i] < '0' || size[i] > '9') return false;
+    parsed_rows = parsed_rows * 10 + (size[i] - '0');
+  }
+  if (parsed_cols < 1 || parsed_rows < 1 || parsed_cols > 8 || parsed_rows > 8) return false;
+  cols = parsed_cols;
+  rows = parsed_rows;
+  return true;
+}

@@ -11,7 +11,7 @@
   "summary": {
     "deviceProfiles": 12,
     "cardTypes": 44,
-    "entityNames": 129,
+    "entityNames": 130,
     "icons": 500,
     "structuralIcons": 28,
     "compatibilityFixtureGroups": 2
@@ -2064,7 +2064,7 @@
     },
     "guition-esp32-s3-jc3248w535": {
       "slug": "guition-esp32-s3-jc3248w535",
-      "slots": 6,
+      "slots": 12,
       "capabilities": {
         "imageSlots": 2
       },
@@ -2076,9 +2076,14 @@
         "orientation": "Portrait"
       },
       "layout": {
-        "cols": 2,
-        "rows": 3,
-        "firmwareGrid": "3x2"
+        "cols": 3,
+        "rows": 4,
+        "firmwareGrid": "4x3",
+        "defaultGrid": "2x3",
+        "gridSizes": [
+          "2x3",
+          "3x4"
+        ]
       },
       "rotation": {
         "enabled": true,
@@ -2271,7 +2276,12 @@
       "layout": {
         "cols": 4,
         "rows": 4,
-        "firmwareGrid": "4x4"
+        "firmwareGrid": "4x4",
+        "defaultGrid": "4x4",
+        "gridSizes": [
+          "3x3",
+          "4x4"
+        ]
       },
       "rotation": {
         "enabled": true,
@@ -8579,6 +8589,19 @@
           "wifi__apply_networks",
           "wifi_networks_apply",
           "wifi_networks_apply_button"
+        ],
+        "groups": [
+          "settings"
+        ]
+      },
+      {
+        "key": "screen_grid_size",
+        "domain": "select",
+        "name": "Screen: Grid Size",
+        "objectIds": [
+          "screen__grid_size",
+          "screen_grid_size",
+          "grid_size_select"
         ],
         "groups": [
           "settings"

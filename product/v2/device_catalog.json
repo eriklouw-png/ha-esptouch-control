@@ -1576,7 +1576,7 @@
         "fonts": "compact-panel"
       },
       "config": {
-        "slots": 6,
+        "slots": 12,
         "capabilities": {
           "imageSlots": 2
         },
@@ -1588,9 +1588,14 @@
           "orientation": "Portrait"
         },
         "layout": {
-          "cols": 2,
-          "rows": 3,
-          "firmwareGrid": "3x2"
+          "cols": 3,
+          "rows": 4,
+          "firmwareGrid": "4x3",
+          "defaultGrid": "2x3",
+          "gridSizes": [
+            "2x3",
+            "3x4"
+          ]
         },
         "rotation": {
           "enabled": true,
@@ -1758,7 +1763,12 @@
         "layout": {
           "cols": 4,
           "rows": 4,
-          "firmwareGrid": "4x4"
+          "firmwareGrid": "4x4",
+          "defaultGrid": "4x4",
+          "gridSizes": [
+            "3x3",
+            "4x4"
+          ]
         },
         "rotation": {
           "enabled": true,

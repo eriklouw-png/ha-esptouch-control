@@ -14,6 +14,8 @@ export interface DeviceConfigFeatures {
   battery?: boolean;
   alarmDelayAudio?: boolean;
   cameraScreensaver?: boolean;
+  gridSizes?: readonly string[];
+  gridDefault?: string;
 }
 
 export interface DeviceConfig {
@@ -202,6 +204,7 @@ export interface AppState {
   cardCurveSupported: boolean;
   cardAlignment: string;
   colorPalette: string;
+  gridSize: string;
   wifiNetworks: string[];
   wifiOrder: string;
   wifiNetworksSupported: boolean;

@@ -389,6 +389,23 @@ def validate_layout(slug: str, device: dict[str, Any], errors: list[str]) -> Non
     if not isinstance(firmware_grid, str) or not re.fullmatch(r"[1-9]\d*x[1-9]\d*", firmware_grid):
         errors.append(device_error(slug, "layout.firmwareGrid must look like '3x5'"))
 
+    # Optional runtime grid sizes ("Screen: Grid Size"). layout.cols/rows is the largest grid
+    # (the one the firmware has slots for); defaultGrid is what the panel shows until a size is chosen.
+    if "gridSizes" in layout or "defaultGrid" in layout:
+        sizes = layout.get("gridSizes")
+        pattern = r"[1-9]\d*x[1-9]\d*"
+        if not isinstance(sizes, list) or not sizes or not all(isinstance(s, str) and re.fullmatch(pattern, s) for s in sizes):
+            errors.append(device_error(slug, "layout.gridSizes must be a list of 'CxR' sizes"))
+        else:
+            default_grid = layout.get("defaultGrid")
+            if default_grid not in sizes:
+                errors.append(device_error(slug, "layout.defaultGrid must be one of layout.gridSizes"))
+            if is_positive_int(layout.get("cols")) and is_positive_int(layout.get("rows")):
+                for size in sizes:
+                    size_cols, size_rows = (int(part) for part in size.split("x"))
+                    if size_cols > layout["cols"] or size_rows > layout["rows"]:
+                        errors.append(device_error(slug, f"layout.gridSizes entry {size} exceeds layout.cols x layout.rows"))
+
     if is_positive_int(slots) and is_positive_int(layout.get("cols")) and is_positive_int(layout.get("rows")):
         expected_slots = layout["cols"] * layout["rows"]
         if slots != expected_slots:
@@ -908,6 +925,10 @@ def web_features(profile: dict[str, Any]) -> dict[str, Any]:
         features["battery"] = True
     if package.get("subpageConfigChunks"):
         features["subpageConfigChunks"] = package["subpageConfigChunks"]
+    layout = profile.get("layout") or {}
+    if layout.get("gridSizes"):
+        features["gridSizes"] = list(layout["gridSizes"])
+        features["gridDefault"] = layout["defaultGrid"]
     if camera_screensaver_supported(profile):
         features["cameraScreensaver"] = True
     return features
@@ -961,6 +982,7 @@ def slot_device(profile: dict[str, Any]) -> dict[str, Any]:
         "slug": profile["slug"],
         "slots": profile["slots"],
         "cols": layout["cols"],
+        "rows": layout["rows"],
         "grid": layout["firmwareGrid"],
         "small_text_font": fonts.get("smallText"),
         "icon_font": fonts["icon"],
@@ -989,6 +1011,9 @@ def slot_device(profile: dict[str, Any]) -> dict[str, Any]:
         "package": firmware.get("package"),
         "camera_screensaver_supported": camera_screensaver_supported(profile),
     }
+    if layout.get("gridSizes"):
+        slot["grid_sizes"] = list(layout["gridSizes"])
+        slot["default_grid"] = layout["defaultGrid"]
     if "portraitCols" in layout:
         slot["portrait_cols"] = layout["portraitCols"]
     if "portraitSlots" in layout:

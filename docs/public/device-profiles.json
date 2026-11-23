@@ -249,15 +249,15 @@
       "screenSize": "3.5 inches",
       "resolution": "320 x 480",
       "orientation": "Portrait",
-      "slots": 6,
+      "slots": 12,
       "imageSlots": 2,
       "imageCardTypes": [
         "image",
         "media_cover_art"
       ],
       "grid": {
-        "rows": 3,
-        "cols": 2
+        "rows": 4,
+        "cols": 3
       },
       "chipFamily": "ESP32-S3",
       "relays": 0,

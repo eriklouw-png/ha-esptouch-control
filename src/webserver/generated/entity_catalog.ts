@@ -659,6 +659,15 @@ export const ENTITY_CATALOG = {
         "wifi_networks_apply_button"
       ]
     },
+    "screen_grid_size": {
+      "domain": "select",
+      "name": "Screen: Grid Size",
+      "objectIds": [
+        "screen__grid_size",
+        "screen_grid_size",
+        "grid_size_select"
+      ]
+    },
     "screen_color_palette": {
       "domain": "text",
       "name": "Screen: Color Palette",
@@ -1023,6 +1032,7 @@ export const ENTITY_CATALOG = {
       "wifi_password_5",
       "wifi_network_order",
       "wifi_networks_apply",
+      "screen_grid_size",
       "screen_color_palette",
       "screen_label_size",
       "screen_theme_auto_method",

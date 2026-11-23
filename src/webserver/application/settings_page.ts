@@ -629,6 +629,30 @@ export function createSettingsPageFeature(codec: Pick<ConfigCodecFeature, "bindT
             batteryStatusCard = makeCollapsibleCard("Battery", batteryStatusBody, true, batteryStatusBadge);
             els.batteryStatusCard = batteryStatusCard;
         }
+        // ── Grid size: how many cards the main page shows (only on panels with several sizes). ──
+        var gridSizeCard: any = null;
+        var gridFeatures: any = (layout.config as any).features || {};
+        if (gridFeatures.gridSizes && gridFeatures.gridSizes.length > 1) {
+            var gridSizeBody: any = document.createElement("div");
+            var gridSizeHint: any = document.createElement("div");
+            gridSizeHint.className = "sp-hint";
+            gridSizeHint.textContent = "Cards that no longer fit are hidden, not deleted. Choose the larger size again to bring them back.";
+            var gridSizeOptions: any = gridFeatures.gridSizes.map(function (size: string) { return [size, size]; });
+            var currentGridSize: any = state.gridSize === "Default" ? gridFeatures.gridDefault : state.gridSize;
+            var gridSizeControl = segmentControl(gridSizeOptions, gridSizeOptions.some(function (o: any) { return o[0] === currentGridSize; }) ? currentGridSize : gridFeatures.gridDefault, function (value: string) {
+                state.gridSize = value;
+                syncPreviewOrientation(true);
+                renderPreview();
+                postSelect(entityName("screen_grid_size"), value);
+            });
+            gridSizeControl.segment.id = "sp-set-grid-size";
+            gridSizeControl.segment.setAttribute("role", "group");
+            gridSizeControl.segment.setAttribute("aria-label", "Grid size");
+            gridSizeBody.appendChild(fieldLabel("Cards per page (columns x rows)"));
+            gridSizeBody.appendChild(gridSizeControl.segment);
+            gridSizeBody.appendChild(gridSizeHint);
+            gridSizeCard = makeCollapsibleCard("Grid Size", gridSizeBody, true);
+        }
         var rotationCard: any = null;
         if (layout.config.features && layout.config.features.screenRotation) {
             var rotationBody: any = document.createElement("div");
@@ -893,6 +917,7 @@ export function createSettingsPageFeature(codec: Pick<ConfigCodecFeature, "bindT
         ]);
         appendSettingsSection(config, "Display", [
             backlightCard,
+            gridSizeCard,
             rotationCard,
         ]);
         appendSettingsSection(config, "Sleep & Schedule", [
