@@ -177,6 +177,15 @@ export function createCoreFeature(
         applicationLayout.previewSlots = layout.slots || applicationLayout.totalSlots;
         applicationLayout.gridCols = layout.cols || applicationLayout.config.cols;
         applicationLayout.gridRows = layout.rows || Math.ceil(applicationLayout.previewSlots / applicationLayout.gridCols);
+        // While a subpage with its own grid size is open, the preview uses that size.
+        var editingSubpage: any = state.editingSubpage != null ? state.subpages[state.editingSubpage] : null;
+        var editingDims: any = editingSubpage && editingSubpage.gridSize
+            ? EspControlModel.subpageDimsFromSize(editingSubpage.gridSize, applicationLayout.config.cols, applicationLayout.config.rows) : null;
+        if (editingDims) {
+            applicationLayout.previewSlots = editingDims.slots;
+            applicationLayout.gridCols = editingDims.cols;
+            applicationLayout.gridRows = editingDims.rows;
+        }
         var r: any = document.documentElement.style;
         r.setProperty("--screen-w", screen.width || applicationLayout.config.screen.width);
         r.setProperty("--screen-aspect", screen.aspect || applicationLayout.config.screen.aspect);
@@ -198,7 +207,10 @@ export function createCoreFeature(
                 if (!sp || !sp.grid || !sp.grid.length)
                     continue;
                 var previousSubpageOrder: any = JSON.stringify(serializeSubpageGrid(sp));
-                normalizeGridSpansForLayout(sp.grid, sp.sizes, applicationLayout.previewSlots, applicationLayout.gridCols);
+                var ownDims: any = sp.gridSize
+                    ? EspControlModel.subpageDimsFromSize(sp.gridSize, applicationLayout.config.cols, applicationLayout.config.rows) : null;
+                normalizeGridSpansForLayout(sp.grid, sp.sizes, ownDims ? ownDims.slots : (layout.slots || applicationLayout.totalSlots),
+                    ownDims ? ownDims.cols : (layout.cols || applicationLayout.config.cols));
                 sp.order = serializeSubpageGrid(sp);
                 if (JSON.stringify(sp.order) !== previousSubpageOrder) {
                     saveSubpage(homeSlot);

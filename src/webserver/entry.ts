@@ -451,6 +451,7 @@ function composeApplicationContext(): ApplicationContext {
     {
       renderPreview: () => preview.render(),
       renderButtonSettings: (force) => buttonSettings.render(force),
+      syncPreviewOrientation: (preserve) => core.syncPreviewOrientation(preserve),
     },
   );
   configurationPersistence.connectCodec(configurationCodec);

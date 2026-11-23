@@ -364,7 +364,23 @@ export function registerSubpageCardTypes(
             SUBPAGE_CARD_METADATA.preview.badge +
             '"></span></span>';
     }
+    // Grid size of the subpage (the same choices as the main page); "Same as main" follows it.
+    function appendSubpageGridSizeControl(this: any, panel?: any, slot?: any) {
+        var choices: any = codec.subpageGridSizes();
+        if (!choices.sizes || choices.sizes.length < 2)
+            return;
+        var options: any = [["", "Same as main"]].concat(choices.sizes.map(function (size: string) { return [size, size]; }));
+        var current: any = codec.getSubpageGridSize(slot);
+        var control: any = fields.segmentControl(options, current, function (value: string) {
+            codec.setSubpageGridSize(slot, value);
+        });
+        control.segment.setAttribute("role", "group");
+        control.segment.setAttribute("aria-label", "Subpage grid size");
+        panel.appendChild(fields.fieldLabel("Subpage grid size"));
+        panel.appendChild(control.segment);
+    }
     function appendEditSubpageButton(this: any, panel?: any, slot?: any) {
+        appendSubpageGridSizeControl(panel, slot);
         var configBtn: any = document.createElement("button");
         configBtn.className = "sp-action-btn sp-edit-subpage-btn";
         configBtn.textContent = "Edit Subpage";

@@ -60,6 +60,14 @@ export {
   setConfigOptionValue,
   trimConfigFields,
   withoutCardColorOptions,
+  DEFAULT_COLOR_PALETTE,
+  cleanPaletteName,
+  getColorPalette,
+  isColorRef,
+  parseColorPalette,
+  resolveColorRef,
+  serializeColorPalette,
+  setColorPalette,
 } from "./config_primitives";
 
 export {
@@ -104,6 +112,10 @@ export {
   parseRawSubpageConfig,
   parseStructuredSubpageConfig,
   parseSubpageOrder,
+  isSubpageSizeToken,
+  subpageSizeFromOrder,
+  subpageDimsFromSize,
+  resizeSubpageGrid,
   serializeCompactSubpageConfig,
   serializeLegacySubpageConfig,
   serializeSubpageGrid,

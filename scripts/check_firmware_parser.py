@@ -804,6 +804,12 @@ int main() {
   assert(parse_hex_color("@groen", valid) == 0x66BB6A && valid);
   assert(parse_hex_color("@Rood", valid) == 0xE64A19 && valid);
   assert(parse_hex_color("@Onbekend", valid) == 0 && !valid);
+  {
+    int size_cols = 0, size_rows = 0;
+    assert(grid_size_parse("3x4", size_cols, size_rows) && size_cols == 3 && size_rows == 4);
+    assert(!grid_size_parse("Default", size_cols, size_rows));
+    assert(!grid_size_parse("0x4", size_cols, size_rows));
+  }
   assert(normalize_card_color_value("@Groen") == "@Groen");
   color_palette_spec() = "";
   assert(!ha_entity_state_unavailable_ref("button.test", "unknown"));

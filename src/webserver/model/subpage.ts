@@ -40,6 +40,49 @@ export interface SubpageGridSource {
 
 const BACK_TOKENS = new Set(["B", "Bd", "Bw", "Bb", "Bt", "Bx"]);
 
+// A subpage can have its own grid size: a "G3x4" token in its order. It takes no cell.
+const SIZE_TOKEN = /^G([1-9][0-9]*)x([1-9][0-9]*)$/;
+
+export function isSubpageSizeToken(token: string | null | undefined): boolean {
+  return SIZE_TOKEN.test(String(token || "").trim());
+}
+
+export function subpageSizeFromOrder(order: readonly string[] | null | undefined): string {
+  for (const item of order || []) {
+    const match = SIZE_TOKEN.exec(String(item || "").trim());
+    if (match) return match[1] + "x" + match[2];
+  }
+  return "";
+}
+
+export interface SubpageDims { cols: number; rows: number; slots: number }
+
+// "3x4" -> {cols:3, rows:4, slots:12} when it fits the device's largest grid; otherwise null
+// (the subpage then follows the main page).
+export function subpageDimsFromSize(size: string | null | undefined, maxCols: number, maxRows: number): SubpageDims | null {
+  const match = /^([1-9][0-9]*)x([1-9][0-9]*)$/.exec(String(size || "").trim());
+  if (!match) return null;
+  const cols = parseInt(match[1] as string, 10);
+  const rows = parseInt(match[2] as string, 10);
+  if (cols > maxCols || rows > maxRows) return null;
+  return { cols, rows, slots: cols * rows };
+}
+
+// Keep each card at its row/column when the grid gets another size. Cards that fall outside
+// the new grid are dropped from the layout (their configuration stays in the subpage).
+export function resizeSubpageGrid(grid: readonly number[], oldCols: number, newCols: number, newSlots: number): number[] {
+  const out = Array<number>(newSlots).fill(0);
+  for (let index = 0; index < grid.length; index += 1) {
+    const value = grid[index] ?? 0;
+    if (value === 0 || oldCols <= 0) continue;
+    const row = Math.floor(index / oldCols);
+    const col = index % oldCols;
+    const target = row * newCols + col;
+    if (col < newCols && target < newSlots && out[target] === 0) out[target] = value;
+  }
+  return out;
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return !!value && typeof value === "object" && !Array.isArray(value);
 }
@@ -332,7 +375,7 @@ export function buildSubpageGrid(
 ): { grid: number[]; sizes: SlotSizeMap } {
   const grid = Array<number>(maxSlots).fill(0);
   const sizes: SlotSizeMap = { ...(subpage.sizes || {}) };
-  const order = subpage.order || [];
+  const order = (subpage.order || []).filter((item) => !isSubpageSizeToken(item));
   const buttonCount = (subpage.buttons || []).length;
   if (order.length > 0) {
     const hasBack = order.some((item) => isBackOrderToken(parseBackOrderToken(item).token));
@@ -383,7 +426,9 @@ export function serializeSubpageGrid(
   sizes: SlotSizeMap,
   backLabel?: string | null,
   backColor?: string | null,
+  gridSize?: string | null,
 ): string[] {
+  const gridSizeToken = gridSize && /^[1-9][0-9]*x[1-9][0-9]*$/.test(gridSize) ? ["G" + gridSize] : [];
   let last = -1;
   for (let i = grid.length - 1; i >= 0; i -= 1) {
     const slot = grid[i] ?? 0;
@@ -392,8 +437,8 @@ export function serializeSubpageGrid(
       break;
     }
   }
-  if (last < 0) return [];
-  const order: string[] = [];
+  if (last < 0) return gridSizeToken;
+  const order: string[] = [...gridSizeToken];
   for (let i = 0; i <= last; i += 1) {
     const slot = grid[i] ?? 0;
     if (slot === -2) {

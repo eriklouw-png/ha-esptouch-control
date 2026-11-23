@@ -99,7 +99,7 @@ export function createConfigCodecFeature(
     layout: ApplicationLayoutState,
     configPersistence: Pick<ConfigPersistenceFeature, "saveSubpageEntity" | "scheduleSliderSubpageMigration">,
     renderQueue: ButtonSettingsRenderQueueFeature,
-    rendering: { renderPreview(): void; renderButtonSettings(force?: boolean): void },
+    rendering: { renderPreview(): void; renderButtonSettings(force?: boolean): void; syncPreviewOrientation?(preservePendingGrid?: boolean): void },
 ) {
     const { renderPreview, renderButtonSettings } = rendering;
     const { saveSubpageEntity, scheduleSliderSubpageMigration } = configPersistence;
@@ -980,11 +980,47 @@ export function createConfigCodecFeature(
         }
         return subpage;
     }
+    // A subpage can have its own grid size ("G3x4" in its order). Without one it follows the main page.
+    function subpageDims(this: any, size?: any) {
+        return EspControlModel.subpageDimsFromSize(size, layout.config.cols, layout.config.rows);
+    }
+    function subpageGridSize(this: any, sp?: any) {
+        var size: any = EspControlModel.subpageSizeFromOrder((sp && sp.order) || []);
+        return subpageDims(size) ? size : "";
+    }
     function buildSubpageGrid(this: any, sp?: any) {
-        var result: any = EspControlModel.buildSubpageGrid(sp, layout.totalSlots, layout.gridCols);
+        sp.gridSize = subpageGridSize(sp);
+        var dims: any = subpageDims(sp.gridSize);
+        var result: any = EspControlModel.buildSubpageGrid(sp, dims ? dims.slots : layout.totalSlots, dims ? dims.cols : layout.gridCols);
         sp.grid = result.grid;
         sp.sizes = result.sizes;
         return sp.grid;
+    }
+    function subpageGridSizes(this: any) {
+        var features: any = (layout.config as any).features || {};
+        return { sizes: features.gridSizes || [], defaultSize: features.gridDefault || "" };
+    }
+    function getSubpageGridSize(this: any, homeSlot?: any) {
+        var sp: any = state.subpages[homeSlot];
+        return sp ? subpageGridSize(sp) : "";
+    }
+    function setSubpageGridSize(this: any, homeSlot?: any, size?: any) {
+        var sp: any = getSubpage(homeSlot);
+        buildSubpageGrid(sp);
+        var oldDims: any = subpageDims(sp.gridSize);
+        var oldCols: any = oldDims ? oldDims.cols : layout.gridCols;
+        var nextDims: any = subpageDims(size);
+        var nextCols: any = nextDims ? nextDims.cols : layout.gridCols;
+        var nextSlots: any = nextDims ? nextDims.slots : layout.totalSlots;
+        sp.gridSize = nextDims ? size : "";
+        sp.grid = EspControlModel.resizeSubpageGrid(sp.grid, oldCols, nextCols, nextSlots);
+        EspControlModel.applySpans(sp.grid, sp.sizes || {}, nextSlots, nextCols);
+        sp.order = serializeSubpageGrid(sp);
+        saveSubpageConfig(homeSlot);
+        if (rendering.syncPreviewOrientation)
+            rendering.syncPreviewOrientation(true);
+        renderPreview();
+        renderButtonSettings(true);
     }
     function buildSubpageGridAndNormalizeOrder(this: any, sp?: any) {
         var previousOrder: any = JSON.stringify((sp && sp.order) || []);
@@ -993,7 +1029,7 @@ export function createConfigCodecFeature(
         return JSON.stringify(sp.order) !== previousOrder;
     }
     function serializeSubpageGrid(this: any, sp?: any) {
-        return EspControlModel.serializeSubpageGrid(sp.grid, sp.sizes || {}, sp.backLabel || "Back", sp.backColor);
+        return EspControlModel.serializeSubpageGrid(sp.grid, sp.sizes || {}, sp.backLabel || "Back", sp.backColor, sp.gridSize || "");
     }
     function enterSubpage(this: any, homeSlot?: any) {
         state.editingSubpage = homeSlot;
@@ -1001,6 +1037,8 @@ export function createConfigCodecFeature(
         state.subpageLastClicked = -1;
         var sp: any = getSubpage(homeSlot);
         buildSubpageGrid(sp);
+        if (rendering.syncPreviewOrientation)
+            rendering.syncPreviewOrientation(true);
         renderPreview();
         renderButtonSettings();
     }
@@ -1008,6 +1046,8 @@ export function createConfigCodecFeature(
         state.editingSubpage = null;
         state.subpageSelectedSlots = [];
         state.subpageLastClicked = -1;
+        if (rendering.syncPreviewOrientation)
+            rendering.syncPreviewOrientation(true);
         renderPreview();
         renderButtonSettings();
     }
@@ -1097,6 +1137,9 @@ export function createConfigCodecFeature(
         applySubpageRaw,
         getSubpage,
         buildSubpageGrid,
+        subpageGridSizes,
+        getSubpageGridSize,
+        setSubpageGridSize,
         buildSubpageGridAndNormalizeOrder,
         serializeSubpageGrid,
         enterSubpage,
