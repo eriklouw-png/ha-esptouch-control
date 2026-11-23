@@ -220,6 +220,12 @@ export function createWebStyles(dragAnimation: boolean): string {
         (dragAnimation ? ".sp-btn.sp-dragging{opacity:.4;transform:scale(.95)}" +
             ".sp-empty-cell.sp-drop-placeholder{--card-outline-color:rgba(92,156,245,.5)}" : "") +
         ".sp-hint{text-align:center;font-size:.7rem;color:var(--text3);padding:8px 0 12px;user-select:none}" +
+        ".sp-look-title{font-weight:600;margin:14px 0 4px}" +
+        ".sp-look-row{border:1px solid rgba(255,255,255,.15);border-radius:10px;padding:8px;margin:8px 0}" +
+        ".sp-look-head{display:flex;align-items:center;gap:8px}" +
+        ".sp-look-head .sp-look-state{flex:1;min-width:0}" +
+        ".sp-look-color{width:34px;height:34px;border-radius:50%;border:1px solid rgba(255,255,255,.45);cursor:pointer;padding:0;flex:none}" +
+        ".sp-look-swatches{margin-top:8px}" +
         ".sp-palette-row{display:flex;align-items:center;gap:10px;padding:4px 0}" +
         ".sp-palette-row input[type=color]{width:44px;height:32px;padding:0;border:1px solid rgba(255,255,255,.35);border-radius:6px;background:none;cursor:pointer}" +
         ".sp-palette-row .sp-input{flex:1;min-width:0}" +

@@ -1,6 +1,7 @@
 import { preserveCardColorOptions } from "../model/config_primitives";
 import { state } from "../state/app_instance";
 import { iconSlug } from "../application/ui_primitives";
+import { renderStateLookEditor } from "./state_look_editor";
 import type { CardRegistry, CardUiServices } from "../application/card_registry";
 import type { ConfigConfirmationOptionsFeature } from "../application/config_confirmation_options";
 import type { EntityStateFeature } from "../application/entity_state";
@@ -340,19 +341,10 @@ export function registerActionCardTypes(
             numericSection.appendChild(statePrecisionField.field);
             helpers.renderCardLargeNumbersToggle(numericSection, b, helpers, ACTION_CARD_METADATA);
             panel.appendChild(numericSection);
-            // Look per state: icon and colour per state of the state entity, e.g. Eco:Snowflake:4FC3F7;Comfort:Fire:E64A19
-            var lookInput: any = helpers.textInput(helpers.idPrefix + "action-state-look", actionCardStateLook(b), "Eco:Snowflake:4FC3F7;Normaal:Home:FFB300;Comfort:Fire:E64A19");
-            var lookField: any = document.createElement("div");
-            lookField.className = "sp-field";
-            lookField.appendChild(helpers.fieldLabel("Look per state (State:Icon:Colour, separated by ;)", helpers.idPrefix + "action-state-look"));
-            lookField.appendChild(lookInput);
-            panel.appendChild(lookField);
-            function saveStateLook(this: any) {
-                helpers.saveField("options", setActionCardStateLook(b, lookInput.value));
-            }
-            lookInput.addEventListener("input", saveStateLook);
-            lookInput.addEventListener("change", saveStateLook);
-            lookInput.addEventListener("blur", saveStateLook);
+            // Look per state: icon and colour per state of the state entity, edited as rows.
+            renderStateLookEditor(panel, b, helpers, function () { return actionCardStateLook(b); }, function (spec: string) {
+                helpers.saveField("options", setActionCardStateLook(b, spec));
+            });
             function saveStateOptions(this: any) {
                 stateEntity = stateEntityInp.value;
                 stateUnit = stateUnitInp.value;
